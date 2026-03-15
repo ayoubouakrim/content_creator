@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api.endpoints import auth
 
 # Create FastAPI app
 app = FastAPI(title="SEO Content Manager API")
@@ -12,6 +13,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 
 # Test endpoint
 @app.get("/")

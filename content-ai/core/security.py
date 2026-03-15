@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 #JWT settings
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = "7c33b40a281263c50ffc2df6b188e0991497549a9b165e5faaef721dfb2a8059"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 1 week
 

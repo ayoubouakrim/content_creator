@@ -1,14 +1,18 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from typing import Optional
 
-class UserBase(BaseModel):
+
+
+class UserCreate(BaseModel):
     email: EmailStr
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    fullname: Optional[str] = None
 
-class UserCreate(UserBase):
-    password: str
 
-class UserLogin(UserBase):
+
+class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
@@ -16,18 +20,22 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
 
-class UserInDB(UserBase):
+class UserResponse(BaseModel):
     id: int
-    password_hash: str
+    email: str
+    username: str
+    full_name: Optional[str]
+    is_active: bool
+    is_verified: bool
     created_at: datetime
-
+    
     class Config:
         from_attributes = True
 
 
-class User(UserBase):
-    id: int
-    created_at: datetime
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-    class Config:
-        from_attributes = True
+class TokenData(BaseModel):
+    email: Optional[str] = None
