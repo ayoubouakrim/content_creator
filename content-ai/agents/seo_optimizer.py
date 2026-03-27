@@ -1,3 +1,5 @@
+from agents.base_agent import BaseAgent
+
 class SEOOptimizer(BaseAgent):
     seo_system_prompt = "You are a helpful assistant that optimizes content for search engines."
     def __init__(self):

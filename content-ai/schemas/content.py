@@ -32,7 +32,7 @@ class SocialMediaPostRequest(BaseModel):
     tone: ToneType = Field(default=ToneType.CASUAL)
     length: int = Field(default=280, description="Approximate character count for the post")
 
-class ProductDescription(BaseModel):
+class ProductDescriptionRequest(BaseModel):
     product_name: str = Field(..., description="The name of the product")
     features: List[str] = Field(..., description="List of key features of the product")
     benefits: str = Field(..., description="Description of the benefits of the product")
