@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from core.config import get_settings
 
@@ -14,7 +14,7 @@ class BaseAgent(ABC):
         return ChatOpenAI (
             base_url="https://models.inference.ai.azure.com",
             api_key=settings.GITHUB_TOKEN,
-            model="openai/gpt-5",
+            model="gpt-5",
             temperature=0.7,
         )
     
@@ -25,6 +25,6 @@ class BaseAgent(ABC):
         ])
 
         chain = full_prompt | self.llm
-        response = chain.run({})
+        response = chain.invoke({})
         
         return response.content

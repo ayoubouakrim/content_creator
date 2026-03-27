@@ -24,3 +24,5 @@ class ContentService:
         print("Generating content...")
         result = agent.create_content(request)
         print("the result is ", result)
+
+        return result
