@@ -25,4 +25,12 @@ class ContentService:
         result = agent.create_content(request)
         print("the result is ", result)
 
-        return result
+        print("Analyzing content for SEO...")
+        analysis = self.seo_optimizer.analyze_content(result, request.keywords)
+        print("SEO Analysis:", analysis)
+
+        print("Improving content based on SEO analysis...")
+        improved_content = self.seo_optimizer.improve_content(result, analysis, request)
+        print("Improved Content:", improved_content)
+
+        return improved_content
