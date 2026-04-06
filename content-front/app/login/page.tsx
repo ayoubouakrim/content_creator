@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 /* ─── Slide mockups ─────────────────────────────────────────── */
 
@@ -178,6 +179,8 @@ export default function LoginPage() {
   const s = SLIDES[slide];
   const { Mockup } = s;
 
+  const router = useRouter();
+
   return (
     <>
       <style>{`
@@ -189,6 +192,8 @@ export default function LoginPage() {
         @keyframes spin   { to{transform:rotate(360deg)} }
 
         .slide-in { animation: fadeUp 0.5s ease both; }
+
+        
 
         .inp {
           display: block;
@@ -482,8 +487,8 @@ export default function LoginPage() {
 
             <p className="text-center mt-[22px] text-[13px] text-slate-400">
               No account yet?{" "}
-              <button className="text-[#6C5CE7] font-bold bg-transparent border-none cursor-pointer text-[13px]">
-                Start free →
+              <button onClick={() => router.push("/register")} className="text-[#6C5CE7] font-bold bg-transparent border-none cursor-pointer text-[13px]">
+                Start free
               </button>
             </p>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";    
 
 /* ─── Slide mockups ─────────────────────────────────────────── */
 
@@ -188,6 +189,8 @@ export default function RegisterPage() {
 
   const floatLabel = (key: string, val: string) => focus[key] || val;
 
+  const router = useRouter();
+
   return (
     <>
       <style>{`
@@ -209,7 +212,7 @@ export default function RegisterPage() {
           font-family: 'Sora', sans-serif;
           outline: none;
           transition: border-color .2s, box-shadow .2s, background .2s;
-          background: #f8faff;
+          background: white;
           border: 1.5px solid #e2e8f0;
           color: #1e293b;
           box-sizing: border-box;
@@ -544,8 +547,8 @@ export default function RegisterPage() {
 
             <p className="text-center mt-5 text-[13px] text-slate-400 m-0">
               Already have an account?{" "}
-              <button className="text-[#6C5CE7] font-bold bg-transparent border-none cursor-pointer text-[13px]">
-                Sign in →
+              <button onClick={ () => router.push("/login") } className="text-[#6C5CE7] font-bold bg-transparent border-none cursor-pointer text-[13px]">
+                Sign in 
               </button>
             </p>
           </div>
