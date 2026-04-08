@@ -8,18 +8,18 @@ def get_user_by_email(db:Session, email: str):
 def get_user_by_id(db:Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
-def get_user_by_username(db:Session, username: str):
-    return db.query(User).filter(User.username == username).first()
 
-def create_user(db:Session, email: str, username: str, password: str):
+def create_user(db:Session, email: str, first_name: str, last_name: str, password: str):
+    username = first_name.lower() + last_name.lower()
     password_hash = hash_password(password)
-    new_user = User(email=email, username=username, hashed_password=password_hash)
+    
+    new_user = User(email=email, first_name=first_name, last_name=last_name, username=username, hashed_password=password_hash)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
 
-def aurthenticate_user(db:Session, email: str, password: str):
+def authenticate_user(db:Session, email: str, password: str):
     user = get_user_by_email(db, email)
     if not user:
         return False

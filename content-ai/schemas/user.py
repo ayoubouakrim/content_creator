@@ -6,9 +6,9 @@ from typing import Optional
 
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str = Field(..., min_length=3, max_length=50)
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
     password: str = Field(..., min_length=6)
-    fullname: Optional[str] = None
 
 
 
@@ -23,8 +23,8 @@ class UserUpdate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
-    username: str
-    full_name: Optional[str]
+    first_name: str
+    last_name: str
     is_active: bool
     is_verified: bool
     created_at: datetime

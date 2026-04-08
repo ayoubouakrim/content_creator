@@ -14,21 +14,19 @@ settings = get_settings()
 def register(user_data: UserCreate, db: Session = Depends(getdb)):
     # check if user already exists
     existing_user = user_crud.get_user_by_email(db, user_data.email)
-    existing_username = user_crud.get_user_by_username(db, user_data.username)
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-    if existing_username:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
+    
 
     # create new user
-    user = user_crud.create_user(db, email=user_data.email, username=user_data.username, password=user_data.password)
+    user = user_crud.create_user(db, email=user_data.email, first_name=user_data.first_name, last_name=user_data.last_name, password=user_data.password)
 
     return user
 
 @router.post("/login")
 def login(credentials: UserLogin, db: Session = Depends(getdb)):
     # authenticate user
-    user = user_crud.aurthenticate_user(db, email=credentials.email, password=credentials.password)
+    user = user_crud.authenticate_user(db, email=credentials.email, password=credentials.password)
 
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
