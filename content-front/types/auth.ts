@@ -19,3 +19,7 @@ export interface UserRegister {
     last_name: string;
     password: string;
 }
+export interface AuthResponse {
+    token: string;
+    user: User;
+}
