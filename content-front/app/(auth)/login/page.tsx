@@ -153,14 +153,21 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
   const [pwFocus, setPwFocus] = useState(false);
-  const {execute, loading, error} = useLogin();
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const {execute, error} = useLogin();
 
   useEffect(() => {
     const iv = setInterval(() => setSlide((s) => (s + 1) % SLIDES.length), 4500);
     return () => clearInterval(iv);
   }, []);
 
-  
+  const validate = () => {
+    const e: typeof errors = {};
+    if (!email.includes("@")) e.email = "Enter a valid email address";
+    if (password.length < 6) e.password = "Password must be at least 6 characters";
+    return e;
+  };
 
   const handleLogin = (ev: React.FormEvent) => {
     ev.preventDefault();
@@ -168,7 +175,7 @@ export default function LoginPage() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
-    setTimeout(() => setLoading(false), 2000);
+    execute({ email, password }).catch(() => setLoading(false));
   };
 
   const s = SLIDES[slide];

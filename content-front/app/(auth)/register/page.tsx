@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";    
+import { useRouter } from "next/navigation";
+import { useRegister } from "@/hooks/useAuth";    
 
 /* ─── Slide mockups ─────────────────────────────────────────── */
 
@@ -154,6 +155,7 @@ export default function RegisterPage() {
   const [agreed, setAgreed]       = useState(false);
   const [loading, setLoading]     = useState(false);
   const [errors, setErrors]       = useState<Record<string, string>>({});
+  const {execute, error} = useRegister();
 
   const [focus, setFocus] = useState<Record<string, boolean>>({});
   const setF = (k: string, v: boolean) => setFocus((f) => ({ ...f, [k]: v }));
@@ -181,7 +183,7 @@ export default function RegisterPage() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
-    setTimeout(() => setLoading(false), 2000);
+    execute({ first_name: firstName, last_name: lastName, email, password }).catch(() => setLoading(false));
   };
 
   const s = SLIDES[slide];

@@ -1,7 +1,7 @@
 import { AuthResponse, UserLogin, UserRegister } from '@/types/auth';
 
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 async function request<T>(url: string, body: unknown): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${url}`, {
