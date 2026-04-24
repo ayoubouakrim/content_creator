@@ -335,8 +335,8 @@ export default function ContentStudio() {
           </div>
         )}
 
-        {/* ─── STEP 4+5: LENGTH & TONE ───────────────── */}
-        <div className="grid sm:grid-cols-2 gap-10 mb-16">
+        {/* ─── STEP 4: LENGTH  ───────────────── */}
+        <div className="mb-16">
 
           {/* LENGTH */}
           <div>
@@ -367,6 +367,14 @@ export default function ContentStudio() {
               </div>
             </div>
           </div>
+
+          
+        </div>
+
+        {/* ─── STEP 5:  TONE ───────────────── */}
+        <div className="mb-16">
+
+          
 
           {/* TONE */}
           <div>
