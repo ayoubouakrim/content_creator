@@ -1,6 +1,8 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import { generateContent } from "@/service/contentService";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 
 /* ══ DATA ══════════════════════════════════════════════════════ */
@@ -125,6 +127,7 @@ export default function ContentStudio() {
   const [error,       setError]       = useState("");
   const [cIdx,        setCIdx]        = useState(0);
   const outputRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(()=>{ setPostType(POST_TYPES[cIdx].id); },[cIdx]);
 
@@ -154,12 +157,26 @@ export default function ContentStudio() {
         {}                                           // productData (optional)
       );
 
-      console.log("✅ Content generated successfully:", data.body);
+      console.log("✅ Content generated successfully:", data);
 
-      // Extract text from response
-      const text = data?.body || data?.content || "No content generated.";
-      setOutput(text);
-      setTimeout(()=>outputRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),200);
+      // Store generated content in localStorage indexed by ID
+      if (typeof window !== "undefined" && data?.id) {
+        const contentData = {
+          ...data,
+          generated_at: new Date().toISOString(),
+          postType,
+          topic,
+          platforms,
+          tone,
+          length: lengthKeys[length],
+        };
+        localStorage.setItem(`content_${data.id}`, JSON.stringify(contentData));
+      }
+
+      // Redirect to results page with content ID
+      if (data?.id) {
+        router.push(`/content/result/${data.id}`);
+      }
     } catch (err) { 
       console.error("❌ Generation error:", err);
       setError("Generation failed. Try again."); 
