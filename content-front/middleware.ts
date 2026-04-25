@@ -5,7 +5,9 @@ const ROOT_ROUTE = "/";
 
 export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
-    const token = req.cookies.get("token")?.value;
+    
+    // Get token from cookies (cookies are available in middleware)
+    const token = req.cookies.get("auth_token")?.value;
 
     const isPublic = PUBLIC_ROUTES.some(route => pathname === route);
     const isRoot = pathname === ROOT_ROUTE;

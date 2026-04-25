@@ -20,6 +20,6 @@ export interface UserRegister {
     password: string;
 }
 export interface AuthResponse {
-    token: string;
+    access_token: string;
     user: User;
 }

@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { generateContent } from "@/service/contentService";
+import Navbar from "@/components/Navbar";
 
 /* ══ DATA ══════════════════════════════════════════════════════ */
 const POST_TYPES = [
@@ -140,16 +142,28 @@ export default function ContentStudio() {
     setError(""); setOutput(""); setLoading(true); setBurst(true);
     setTimeout(()=>setBurst(false),1000);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000,
-          messages:[{role:"user",content:buildPrompt({topic,postType,platforms,length:lengthKeys[length] as "short" | "medium" | "long",tone})}] }),
-      });
-      const data = await res.json();
-      const text = data.content?.map((b: any)=>b.text||"").join("")||"No content generated.";
+      // ========== CONDITIONAL ROUTING TO CONTENT SERVICE ==========
+      // The generateContent function uses switch statement to route to appropriate API
+      const data = await generateContent(
+        postType,                                    // content type: blog, social, product, youtube, tiktok
+        topic,                                       // main topic
+        platforms,                                   // selected platforms (for social media)
+        lengthKeys[length] as "short" | "medium" | "long",  // content length
+        tone,                                        // writing tone
+        [topic],                                     // keywords
+        {}                                           // productData (optional)
+      );
+
+      console.log("✅ Content generated successfully:", data.body);
+
+      // Extract text from response
+      const text = data?.body || data?.content || "No content generated.";
       setOutput(text);
       setTimeout(()=>outputRef.current?.scrollIntoView({behavior:"smooth",block:"start"}),200);
-    } catch { setError("Generation failed. Try again."); }
+    } catch (err) { 
+      console.error("❌ Generation error:", err);
+      setError("Generation failed. Try again."); 
+    }
     finally { setLoading(false); }
   };
 
@@ -187,30 +201,7 @@ export default function ContentStudio() {
       <div className="fixed inset-0 pointer-events-none z-0"
         style={{ backgroundImage:"linear-gradient(rgba(108,92,231,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(108,92,231,.055) 1px,transparent 1px)", backgroundSize:"48px 48px" }} />
 
-      {/* Orbs */}
-      <div className="fixed top-[10%] left-[5%] w-120 h-120 rounded-full pointer-events-none z-0" style={{ background:"radial-gradient(circle,rgba(108,92,231,.12) 0%,transparent 70%)" }}/>
-      <div className="fixed bottom-[10%] right-[5%] w-95 h-95 rounded-full pointer-events-none z-0" style={{ background:"radial-gradient(circle,rgba(0,206,201,.09) 0%,transparent 70%)" }}/>
-      <div className="fixed top-1/2 right-[20%] w-70 h-70 rounded-full pointer-events-none z-0" style={{ background:"radial-gradient(circle,rgba(253,121,168,.07) 0%,transparent 70%)" }}/>
-
-      {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-10 py-5 border-b border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background:"linear-gradient(135deg,#6C5CE7,#8b5cf6)" }}>
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M4 9Q9 4 14 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              <path d="M4 12Q9 7 14 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              <circle cx="14" cy="13" r="3" fill="white"/>
-              <path d="M12.8 13l.9.9 1.5-1.8" stroke="#6C5CE7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="font-bold text-[15px] tracking-tight">CreatorAI</span>
-        </div>
-        <div className="flex items-center gap-2 bg-white/4 border border-white/8 rounded-full px-3.5 py-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-teal-400" style={{ animation:"ringPulse 2s ease-out infinite" }}/>
-          <span className="text-white/35 text-[11px] tracking-[0.08em] uppercase" style={{ fontFamily:"'DM Sans',sans-serif" }}>Studio Live</span>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="relative z-5 max-w-215 mx-auto px-6 py-12 pb-28">
 
