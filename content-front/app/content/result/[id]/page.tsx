@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 
 /* ══ PLATFORM DATA ═════════════════════════════════════════════ */
 const PLATFORM_META = {
@@ -748,29 +749,7 @@ export default function ResultsPage() {
       <div className="fixed bottom-[10%] right-[5%] w-[380px] h-[380px] rounded-full pointer-events-none z-0" style={{ background:"radial-gradient(circle,rgba(0,206,201,.07) 0%,transparent 70%)" }}/>
 
       {/* Nav */}
-      <nav className="relative z-10 flex items-center gap-4 px-10 py-5 border-b border-white/[0.05]">
-        <button onClick={() => router.back()}
-          className="flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors cursor-pointer border border-white/10 bg-white/[0.04] rounded-full px-4 py-2 hover:bg-white/[0.08]"
-          style={{ fontFamily:"'DM Sans',sans-serif" }}>
-          ← Back to Studio
-        </button>
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:"linear-gradient(135deg,#6C5CE7,#8b5cf6)" }}>
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M4 9Q9 4 14 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              <path d="M4 12Q9 7 14 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-              <circle cx="14" cy="13" r="3" fill="white"/>
-            </svg>
-          </div>
-          <span className="font-bold text-[15px] tracking-tight">CreatorAI</span>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <span className="text-white/30 text-xs" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-            {activeType.icon} {activeType.label} · {length} · {tone}
-          </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-teal-400" style={{ animation:"ringPulse 2s ease-out infinite" }}/>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="relative z-[5] max-w-[900px] mx-auto px-6 py-12 pb-28">
 
