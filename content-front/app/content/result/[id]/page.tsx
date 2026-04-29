@@ -782,7 +782,7 @@ export default function ResultsPage() {
 
         {/* ── SOCIAL MEDIA — one card per platform ── */}
         {contentType === "social" && (
-          <div className="flex flex-col gap-10">
+          <div className="grid grid-cols-2 gap-10">
             {platforms.map((pid, i) => {
               const PlatformCard = PLATFORM_COMPONENTS[pid];
               const meta = PLATFORM_META[pid] || {};

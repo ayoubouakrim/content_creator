@@ -197,6 +197,7 @@ export default function ContentStudio() {
         @keyframes floatUp   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
         @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
         @keyframes transmit  { from{opacity:0;clip-path:inset(0 100% 0 0)} to{opacity:1;clip-path:inset(0 0% 0 0)} }
+        @keyframes fadeIn    { from{opacity:0} to{opacity:1} }
         @keyframes ringPulse { 0%{transform:scale(1);opacity:.5} 100%{transform:scale(2.2);opacity:0} }
         @keyframes scanline  { from{transform:translateY(-100%)} to{transform:translateY(100%)} }
         @keyframes glitch    { 0%,94%,100%{transform:none;opacity:1} 95%{transform:translate(2px,-1px);opacity:.8} 97%{transform:translate(-2px,1px);opacity:.9} }
@@ -437,59 +438,65 @@ export default function ContentStudio() {
 
         {/* ─── OUTPUT TERMINAL ───────────────────────── */}
         {(output||loading) && (
-          <div ref={outputRef}
-            className="relative rounded-3xl overflow-hidden backdrop-blur-2xl"
-            style={{ background:"rgba(6,4,18,.87)",
-              border:"1px solid rgba(108,92,231,.28)",
-              boxShadow:"0 0 80px rgba(108,92,231,.13), 0 40px 80px rgba(0,0,0,.6)",
-              animation:"transmit .6s ease both" }}>
+          <>
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" style={{ animation:"fadeIn .3s ease both" }}/>
+            
+            {/* Modal Dialog */}
+            <div ref={outputRef}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl rounded-3xl overflow-hidden backdrop-blur-2xl z-50"
+              style={{ background:"rgba(6,4,18,.95)",
+                border:"1px solid rgba(108,92,231,.28)",
+                boxShadow:"0 0 80px rgba(108,92,231,.13), 0 40px 80px rgba(0,0,0,.6)",
+                animation:"transmit .6s ease both" }}>
 
-            {/* Chrome bar */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b bg-violet-500/6"
-              style={{ borderColor:"rgba(108,92,231,.2)" }}>
-              <div className="flex items-center gap-2.5">
-                <div className="flex gap-1.5">
-                  {["#f87171","#fbbf24","#4ade80"].map(c=><div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background:c }}/>)}
+              {/* Chrome bar */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b bg-violet-500/6"
+                style={{ borderColor:"rgba(108,92,231,.2)" }}>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex gap-1.5">
+                    {["#f87171","#fbbf24","#4ade80"].map(c=><div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background:c }}/>)}
+                  </div>
+                  <span className="text-white/25 text-[11px] tracking-widest uppercase" style={{ fontFamily:"'DM Sans',sans-serif" }}>
+                    TRANSMISSION — {at.label.toUpperCase()}
+                  </span>
+                  <div className="w-1.25 h-1.25 rounded-full bg-teal-400" style={{ animation:"ringPulse 1.5s ease-out infinite" }}/>
                 </div>
-                <span className="text-white/25 text-[11px] tracking-widest uppercase" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-                  TRANSMISSION — {at.label.toUpperCase()}
-                </span>
-                <div className="w-1.25 h-1.25 rounded-full bg-teal-400" style={{ animation:"ringPulse 1.5s ease-out infinite" }}/>
+                {output && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-white/20 text-[11px]" style={{ fontFamily:"'DM Sans',sans-serif" }}>{output.length} chars</span>
+                    <CopyBtn text={output}/>
+                  </div>
+                )}
               </div>
+
+              {/* Body */}
+              <div className="px-7 py-7 min-h-60 max-h-96 overflow-y-auto">
+                {loading && (
+                  <div className="flex flex-col gap-3 opacity-60">
+                    {[90,70,85,55,75,40].map((w,i)=>(
+                      <div key={i} className="h-2 rounded-full bg-violet-500/30"
+                        style={{ width:`${w}%`, animation:`glitch ${1+i*.3}s ease-in-out infinite` }}/>
+                    ))}
+                  </div>
+                )}
+                {output && <RichText text={output}/>}
+              </div>
+
+              {/* Footer */}
               {output && (
-                <div className="flex items-center gap-2">
-                  <span className="text-white/20 text-[11px]" style={{ fontFamily:"'DM Sans',sans-serif" }}>{output.length} chars</span>
+                <div className="flex justify-end gap-2 px-5 py-3 border-t bg-black/20"
+                  style={{ borderColor:"rgba(255,255,255,.05)" }}>
+                  <button onClick={generate}
+                    className="px-4 py-2 rounded-xl text-[11px] font-semibold text-violet-300 border border-violet-500/30 bg-violet-500/10 cursor-pointer transition-all duration-200 hover:bg-violet-500/25"
+                    style={{ fontFamily:"'DM Sans',sans-serif" }}>
+                    ↺ Regenerate
+                  </button>
                   <CopyBtn text={output}/>
                 </div>
               )}
             </div>
-
-            {/* Body */}
-            <div className="px-7 py-7 min-h-45 max-h-130 overflow-y-auto">
-              {loading && (
-                <div className="flex flex-col gap-3 opacity-60">
-                  {[90,70,85,55,75,40].map((w,i)=>(
-                    <div key={i} className="h-2 rounded-full bg-violet-500/30"
-                      style={{ width:`${w}%`, animation:`glitch ${1+i*.3}s ease-in-out infinite` }}/>
-                  ))}
-                </div>
-              )}
-              {output && <RichText text={output}/>}
-            </div>
-
-            {/* Footer */}
-            {output && (
-              <div className="flex justify-end gap-2 px-5 py-3 border-t bg-black/20"
-                style={{ borderColor:"rgba(255,255,255,.05)" }}>
-                <button onClick={generate}
-                  className="px-4 py-2 rounded-xl text-[11px] font-semibold text-violet-300 border border-violet-500/30 bg-violet-500/10 cursor-pointer transition-all duration-200 hover:bg-violet-500/25"
-                  style={{ fontFamily:"'DM Sans',sans-serif" }}>
-                  ↺ Regenerate
-                </button>
-                <CopyBtn text={output}/>
-              </div>
-            )}
-          </div>
+          </>
         )}
       </div>
     </div>
