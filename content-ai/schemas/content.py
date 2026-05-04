@@ -61,6 +61,24 @@ class TiktokContentRequest(BaseModel):
     tone: ToneType = Field(default=ToneType.CASUAL)
     length: str = Field(default="short", description="Content length: short, medium, or long")
 
+
+class SEOReport(BaseModel):
+    """
+    SEO analysis report containing score, breakdown, and recommendations.
+    Parsed from the SEOOptimizer's analyze_content output.
+    """
+    id: Optional[int] = None
+    content_id: Optional[int] = None
+    score: int = Field(..., description="Overall SEO score (0-100)")
+    score_breakdown: dict = Field(..., description="Detailed breakdown of scores")
+    positive_points: List[str] = Field(default_factory=list, description="What's working well")
+    negative_points: List[str] = Field(default_factory=list, description="Areas needing improvement")
+    points_to_improve: List[dict] = Field(default_factory=list, description="Actionable recommendations with priority")
+    
+    class Config:
+        from_attributes = True
+
+
 class ContentResponse(BaseModel):
     id: int
     user_id: int
@@ -70,11 +88,10 @@ class ContentResponse(BaseModel):
     word_count: int
     content_type: str
     status: str = "generated"
-    created_at: str = "2024-01-01T00:00:00Z"
     platform: Optional[str] = None
-    status: str
     tone: Optional[str] = None
     created_at: datetime
+    seo_report: Optional[SEOReport] = None
 
     class Config:
         from_attributes = True

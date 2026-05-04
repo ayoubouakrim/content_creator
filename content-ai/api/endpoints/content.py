@@ -30,11 +30,12 @@ async def generate_blog_article(request: BlogArticleRequest):
             id=1,
             user_id=request.user_id or 1,
             title=request.topic,
-            body=result,
-            word_count=len(result.split()),
+            body=result["content"],
+            word_count=len(result["content"].split()),
             content_type="blog_article",
             status="generated",
             created_at="2024-01-01T00:00:00Z",
+            seo_report=result["seo_report"],
         )
         return content_response
     except Exception as e:
@@ -57,11 +58,12 @@ async def generate_social_media_post(request: SocialMediaPostRequest):
             id=1,
             user_id=1,
             title=request.topic,
-            body=result,
-            word_count=len(result.split()),
+            body=result["content"],
+            word_count=len(result["content"].split()),
             content_type="social_media_post",
             status="generated",
             created_at="2024-01-01T00:00:00Z",
+            seo_report=result["seo_report"],
         )
         return content_response
     except Exception as e:
@@ -85,11 +87,12 @@ async def generate_product_description(request: ProductDescriptionRequest):
             id=1,
             user_id=1,
             title=request.product_name,
-            body=result,
-            word_count=len(result.split()),
+            body=result["content"],
+            word_count=len(result["content"].split()),
             content_type="product_description",
             status="generated",
             created_at="2024-01-01T00:00:00Z",
+            seo_report=result["seo_report"],
         )
         return content_response
     except Exception as e:
@@ -112,11 +115,12 @@ async def generate_youtube_content(request: YoutubeContentRequest):
             id=1,
             user_id=1,
             title=request.topic,
-            body=result,
-            word_count=len(result.split()),
+            body=result["content"],
+            word_count=len(result["content"].split()),
             content_type="youtube_content",
             status="generated",
             created_at="2024-01-01T00:00:00Z",
+            seo_report=result["seo_report"],
         )
         return content_response
     except Exception as e:
@@ -139,11 +143,12 @@ async def generate_tiktok_content(request: TiktokContentRequest):
             id=1,
             user_id=1,
             title=request.topic,
-            body=result,
-            word_count=len(result.split()),
+            body=result["content"],
+            word_count=len(result["content"].split()),
             content_type="tiktok_content",
             status="generated",
             created_at="2024-01-01T00:00:00Z",
+            seo_report=result["seo_report"],
         )
         return content_response
     except Exception as e:

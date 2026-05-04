@@ -101,6 +101,132 @@ function CopyBtn({ text, light = false }: { text?: string; light?: boolean }) {
   );
 }
 
+/* ══ SEO REPORT CARD ════════════════════════════════════════════ */
+function SEOReportCard({ report }: { report: any }) {
+  if (!report) return null;
+  
+  const score = report.score || 0;
+  const scoreColor = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : "#ef4444";
+  const scoreLabel = score >= 80 ? "Great" : score >= 60 ? "Good" : "Needs Work";
+  
+  return (
+    <div className="rounded-3xl border border-white/10 overflow-hidden sticky top-6" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+      {/* Header */}
+      <div className="flex items-center gap-2 p-6 pb-4 border-b border-white/8">
+        <span className="text-2xl">📊</span>
+        <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>SEO Analysis</span>
+      </div>
+
+      <div className="p-6 space-y-6">
+        {/* Score Circle */}
+        <div className="flex flex-col items-center justify-center">
+          <div className="relative w-28 h-28 flex items-center justify-center mb-4">
+            <svg className="absolute inset-0" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.1)" strokeWidth="4"/>
+              <circle 
+                cx="60" cy="60" r="54" 
+                fill="none" 
+                stroke={scoreColor} 
+                strokeWidth="4"
+                strokeDasharray={`${(score / 100) * 339} 339`}
+                strokeLinecap="round"
+                transform="rotate(-90 60 60)"
+              />
+            </svg>
+            <div className="text-center z-10">
+              <div className="text-3xl font-extrabold" style={{ color: scoreColor }}>{score}</div>
+              <div className="text-xs text-white/40 mt-1">/ 100</div>
+            </div>
+          </div>
+          <p className="text-sm font-semibold" style={{ color: scoreColor }}>{scoreLabel}</p>
+        </div>
+
+        {/* Positive Points */}
+        {report.positive_points && report.positive_points.length > 0 && (
+          <div>
+            <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3">✓ Strengths</h3>
+            <div className="space-y-2">
+              {report.positive_points.slice(0, 3).map((point: string, i: number) => (
+                <div key={i} className="flex gap-2 text-xs text-white/70">
+                  <span className="text-emerald-400 mt-0.5">✓</span>
+                  <span>{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Negative Points */}
+        {report.negative_points && report.negative_points.length > 0 && (
+          <div>
+            <h3 className="text-xs font-bold text-red-400 uppercase tracking-widest mb-3">✗ Areas to Improve</h3>
+            <div className="space-y-2">
+              {report.negative_points.slice(0, 3).map((point: string, i: number) => (
+                <div key={i} className="flex gap-2 text-xs text-white/70">
+                  <span className="text-red-400 mt-0.5">!</span>
+                  <span>{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {report.points_to_improve && report.points_to_improve.length > 0 && (
+          <div>
+            <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3">💡 Recommendations</h3>
+            <div className="space-y-2">
+              {report.points_to_improve.slice(0, 3).map((rec: any, i: number) => (
+                <div key={i} className="rounded-lg p-2.5 border" style={{
+                  background: rec.priority === "high" ? "rgba(239,68,68,.08)" : rec.priority === "medium" ? "rgba(245,158,11,.08)" : "rgba(107,114,128,.08)",
+                  borderColor: rec.priority === "high" ? "rgba(239,68,68,.2)" : rec.priority === "medium" ? "rgba(245,158,11,.2)" : "rgba(107,114,128,.2)"
+                }}>
+                  <div className="flex items-start gap-2">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5" style={{
+                      background: rec.priority === "high" ? "rgba(239,68,68,.3)" : rec.priority === "medium" ? "rgba(245,158,11,.3)" : "rgba(107,114,128,.3)",
+                      color: rec.priority === "high" ? "#fca5a5" : rec.priority === "medium" ? "#fcd34d" : "#d1d5db"
+                    }}>
+                      {rec.priority.toUpperCase()}
+                    </span>
+                    <span className="text-xs text-white/60 leading-tight flex-1">{rec.action}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Score Breakdown Details */}
+        {report.score_breakdown && (
+          <div className="pt-4 border-t border-white/8">
+            <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">Score Breakdown</h3>
+            <div className="space-y-2 text-[11px]">
+              {report.score_breakdown.word_count && (
+                <div className="flex justify-between text-white/50">
+                  <span>Word Count:</span>
+                  <span className="text-white/70">{report.score_breakdown.word_count} words</span>
+                </div>
+              )}
+              {report.score_breakdown.readability && report.score_breakdown.readability.flesch_score && (
+                <div className="flex justify-between text-white/50">
+                  <span>Readability:</span>
+                  <span className="text-white/70">{report.score_breakdown.readability.flesch_score}/100</span>
+                </div>
+              )}
+              {report.score_breakdown.readability && report.score_breakdown.readability.tone && (
+                <div className="flex justify-between text-white/50">
+                  <span>Tone:</span>
+                  <span className="text-white/70 capitalize">{report.score_breakdown.readability.tone}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ══ BLOG RENDERER ═════════════════════════════════════════════ */
 function BlogCard({ text }: { text: string }) {
   const { title, body } = parseBlog(text);
@@ -711,7 +837,7 @@ export default function ResultsPage() {
     );
   }
 
-  const { body: text, content_type: postType, topic, tone, length, postType: postTypeField, platforms = [] } = content;
+  const { body: text, content_type: postType, topic, tone, length, postType: postTypeField, platforms = [], seo_report } = content;
   const contentType = postTypeField || postType || "blog";
   const activeType = POST_TYPES[contentType as keyof typeof POST_TYPES] || POST_TYPES.blog;
 
@@ -751,7 +877,7 @@ export default function ResultsPage() {
       {/* Nav */}
       <Navbar />
 
-      <div className="relative z-[5] max-w-[900px] mx-auto px-6 py-12 pb-28">
+      <div className="relative z-[5] max-w-[1400px] mx-auto px-6 py-12 pb-28">
 
         {/* Header */}
         <div className="text-center mb-12 fade-up">
@@ -769,83 +895,96 @@ export default function ResultsPage() {
           </p>
         </div>
 
-        {/* ── BLOG ── */}
-        {contentType === "blog" && (
-          <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-              <span className="text-2xl">✍️</span>
-              <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>Medium-style Article</span>
-            </div>
-            <BlogCard text={text}/>
-          </div>
-        )}
-
-        {/* ── SOCIAL MEDIA — one card per platform ── */}
-        {contentType === "social" && (
-          <div className="grid grid-cols-2 gap-10">
-            {platforms.map((pid, i) => {
-              const PlatformCard = PLATFORM_COMPONENTS[pid];
-              const meta = PLATFORM_META[pid] || {};
-              const content = socialPosts[pid] || text;
-              if (!PlatformCard) return null;
-              return (
-                <div key={pid} className="fade-up" style={{ animationDelay:`${i*0.1}s` }}>
-                  {/* Platform label */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold text-white"
-                      style={{ background:meta.color }}>
-                      {PLATFORMS.find(p=>p.id===pid)?.label}
-                    </div>
-                    <span className="font-bold text-sm" style={{ color:meta.color, fontFamily:"'DM Sans',sans-serif" }}>{meta.label}</span>
-                    <div className="flex-1 h-px" style={{ background:`linear-gradient(90deg,${meta.color}44,transparent)` }}/>
-                  </div>
-                  <PlatformCard content={content}/>
+        {/* 2-Column Layout: Content + SEO Report */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* ── BLOG ── */}
+            {contentType === "blog" && (
+              <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
+                  <span className="text-2xl">✍️</span>
+                  <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>Medium-style Article</span>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <BlogCard text={text}/>
+              </div>
+            )}
 
-        {/* ── YOUTUBE ── */}
-        {contentType === "youtube" && (
-          <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-              <span className="text-2xl">▶️</span>
-              <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>YouTube Preview</span>
+            {/* ── SOCIAL MEDIA — one card per platform ── */}
+            {contentType === "social" && (
+              <div className="grid grid-cols-2 gap-10">
+                {platforms.map((pid, i) => {
+                  const PlatformCard = PLATFORM_COMPONENTS[pid];
+                  const meta = PLATFORM_META[pid] || {};
+                  const content = socialPosts[pid] || text;
+                  if (!PlatformCard) return null;
+                  return (
+                    <div key={pid} className="fade-up" style={{ animationDelay:`${i*0.1}s` }}>
+                      {/* Platform label */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold text-white"
+                          style={{ background:meta.color }}>
+                          {PLATFORMS.find(p=>p.id===pid)?.label}
+                        </div>
+                        <span className="font-bold text-sm" style={{ color:meta.color, fontFamily:"'DM Sans',sans-serif" }}>{meta.label}</span>
+                        <div className="flex-1 h-px" style={{ background:`linear-gradient(90deg,${meta.color}44,transparent)` }}/>
+                      </div>
+                      <PlatformCard content={content}/>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── YOUTUBE ── */}
+            {contentType === "youtube" && (
+              <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
+                  <span className="text-2xl">▶️</span>
+                  <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>YouTube Preview</span>
+                </div>
+                <YoutubeCard text={text}/>
+              </div>
+            )}
+
+            {/* ── TIKTOK ── */}
+            {contentType === "tiktok" && (
+              <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
+                  <span className="text-2xl">🎵</span>
+                  <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>TikTok Preview</span>
+                </div>
+                <TiktokCard text={text}/>
+              </div>
+            )}
+
+            {/* ── PRODUCT ── */}
+            {contentType === "product" && (
+              <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
+                  <span className="text-2xl">🛍️</span>
+                  <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>Product Listing</span>
+                </div>
+                <ProductCard text={text}/>
+              </div>
+            )}
+
+            {/* Back button */}
+            <div className="text-center mt-12">
+              <button onClick={() => router.push("/content/create")}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/15 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200 cursor-pointer text-sm font-semibold"
+                style={{ fontFamily:"'DM Sans',sans-serif" }}>
+                ← Create Another
+              </button>
             </div>
-            <YoutubeCard text={text}/>
           </div>
-        )}
 
-        {/* ── TIKTOK ── */}
-        {contentType === "tiktok" && (
-          <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-              <span className="text-2xl">🎵</span>
-              <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>TikTok Preview</span>
+          {/* Right Column: SEO Report */}
+          {seo_report && (
+            <div className="lg:col-span-1">
+              <SEOReportCard report={seo_report}/>
             </div>
-            <TiktokCard text={text}/>
-          </div>
-        )}
-
-        {/* ── PRODUCT ── */}
-        {contentType === "product" && (
-          <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-              <span className="text-2xl">🛍️</span>
-              <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>Product Listing</span>
-            </div>
-            <ProductCard text={text}/>
-          </div>
-        )}
-
-        {/* Back button */}
-        <div className="text-center mt-12">
-          <button onClick={() => router.push("/content/create")}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/15 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200 cursor-pointer text-sm font-semibold"
-            style={{ fontFamily:"'DM Sans',sans-serif" }}>
-            ← Create Another
-          </button>
+          )}
         </div>
       </div>
     </div>
