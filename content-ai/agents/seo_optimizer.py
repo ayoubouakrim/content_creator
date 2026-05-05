@@ -3,7 +3,7 @@ from agents.base_agent import BaseAgent
 class SEOOptimizer(BaseAgent):
 
     seo_system_prompt = """
-    You are an expert SEO content analyst. Your job is to evaluate blog posts
+    You are an expert SEO content analyst. Your job is to evaluate the content
     and return a structured JSON report that identifies SEO strengths,
     weaknesses, and actionable recommendations.
 

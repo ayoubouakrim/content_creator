@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -62,18 +62,86 @@ class TiktokContentRequest(BaseModel):
     length: str = Field(default="short", description="Content length: short, medium, or long")
 
 
+class KeywordAnalysis(BaseModel):
+    """Individual keyword analysis with volume and density data."""
+    term: str
+    search_volume: Optional[int] = None
+    keyword_difficulty: Optional[int] = None
+    usage_count: int = 0
+    note: Optional[str] = None
+
+
+class OnPageElement(BaseModel):
+    """On-page SEO element evaluation."""
+    element: str
+    status: str  # "good", "needs_work", "missing"
+    current: Optional[str] = None
+    suggestion: Optional[str] = None
+    priority: Optional[str] = None
+
+
+class ReadabilityMetric(BaseModel):
+    """Readability analysis breakdown."""
+    metric_name: str
+    value: Union[int, float, str]
+    target: Optional[str] = None
+    status: Optional[str] = None
+
+
+class SEORecommendation(BaseModel):
+    """Individual SEO recommendation with priority and action."""
+    priority: str  # "HIGH", "MED", "LOW"
+    title: str
+    description: str
+    category: Optional[str] = None
+
+
 class SEOReport(BaseModel):
     """
-    SEO analysis report containing score, breakdown, and recommendations.
+    Comprehensive SEO analysis report with detailed metrics and recommendations.
     Parsed from the SEOOptimizer's analyze_content output.
     """
     id: Optional[int] = None
     content_id: Optional[int] = None
+    
+    # Basic metrics
     score: int = Field(..., description="Overall SEO score (0-100)")
-    score_breakdown: dict = Field(..., description="Detailed breakdown of scores")
-    positive_points: List[str] = Field(default_factory=list, description="What's working well")
-    negative_points: List[str] = Field(default_factory=list, description="Areas needing improvement")
-    points_to_improve: List[dict] = Field(default_factory=list, description="Actionable recommendations with priority")
+    score_label: str = Field(default="Needs SEO work", description="Score interpretation")
+    
+    # Post metadata
+    post_title: Optional[str] = None
+    niche: Optional[str] = None
+    format: Optional[str] = None
+    
+    # Word count & target
+    word_count: int = 0
+    word_count_target: Optional[str] = None
+    word_count_status: Optional[str] = None
+    
+    # Readability
+    readability_score: Optional[int] = None
+    readability_level: Optional[str] = None
+    readability_metrics: List[ReadabilityMetric] = Field(default_factory=list)
+    
+    # Keyword analysis
+    keyword_density: Optional[float] = None
+    primary_keyword: Optional[KeywordAnalysis] = None
+    secondary_keywords: List[KeywordAnalysis] = Field(default_factory=list)
+    missing_keywords: List[KeywordAnalysis] = Field(default_factory=list)
+    
+    # On-page elements
+    on_page_elements: List[OnPageElement] = Field(default_factory=list)
+    
+    # Meta suggestions
+    title_suggestion: Optional[str] = None
+    meta_description_suggestion: Optional[str] = None
+    
+    # Content strengths & weaknesses
+    positive_points: List[str] = Field(default_factory=list)
+    negative_points: List[str] = Field(default_factory=list)
+    
+    # Recommendations
+    recommendations: List[SEORecommendation] = Field(default_factory=list)
     
     class Config:
         from_attributes = True
