@@ -43,9 +43,10 @@ class ContentService:
             content_type = "blog"
             
         elif isinstance(request, SocialMediaPostRequest):
-            print(f"🚀 Routing to SocialMediaAgent for platform: {request.platform}")
+            print(f"🚀 Routing to SocialMediaAgent for platforms: {request.platforms}")
             agent = SocialMediaAgent()
             content_type = "social_media"
+            platforms = request.platforms
             
         elif isinstance(request, ProductDescriptionRequest):
             print(f"🚀 Routing to ProductAgent for product: {request.product_name}")
@@ -55,14 +56,15 @@ class ContentService:
         else:
             raise ValueError(f"❌ Unsupported content type: {type(request)}")
 
-        # Generate content using the appropriate agent
-        print(f"📝 Generating {content_type} content...")
-        result = agent.create_content(request)
-        print(f"✅ {content_type.upper()} content generated successfully")
-        print(f"Result preview: {result[:100]}...")
-
         # SEO optimization (only for blog articles)
         if content_type == "blog":
+
+            # Generate content using the appropriate agent
+            print(f"📝 Generating {content_type} content...")
+            result = agent.create_content(request)
+            print(f"✅ {content_type.upper()} content generated successfully")
+            print(f"Result preview: {result[:100]}...")
+
             print("🔍 Analyzing content for SEO...")
             analysis = self.seo_optimizer.analyze_content(result, request.keywords)
             print(f"SEO Analysis: {analysis[:200]}...")
@@ -70,6 +72,37 @@ class ContentService:
             # Parse analysis into structured SEOReport
             seo_report = self.parse_analysis(analysis)
             print(f"📊 SEO Report Score: {seo_report.score}/100")
+        
+        elif content_type == "social_media":
+            # run platform-specific social analyzer and parse into SEOReport
+            keywords = getattr(request, "keywords", None) or [getattr(request, "topic", "")]
+            list_of_content_and_reports = []
+            for platform in request.platforms :
+
+                # Generate content using the appropriate agent
+                print(f"📝 Generating {content_type} content...")
+                result = agent.create_content(request)
+                print(f"✅ {content_type.upper()} content generated successfully")
+                
+
+                if platform == "twitter":
+                    analysis = self.seo_optimizer.analyze_twitter_post(result, keywords)
+                elif platform == "instagram":
+                    analysis = self.seo_optimizer.analyze_instagram_post(result, keywords)
+                elif platform == "facebook":
+                    analysis = self.seo_optimizer.analyze_facebook_post(result, keywords)
+                
+                # Parse analysis into structured SEOReport
+                seo_report = self.parse_social_analysis(analysis)
+                print(f"📊 Social SEO Report Score for {platform}: {seo_report.score}/100")
+
+                
+                list_of_content_and_reports.append({
+                    "content": result,
+                    "seo_report": seo_report
+                })
+
+            return list_of_content_and_reports
 
         return {
             "content": result,
@@ -77,25 +110,7 @@ class ContentService:
         }
     
     def parse_analysis(self, analysis_json: str) -> SEOReport:
-        """
-        Parse the comprehensive SEO analysis JSON from SEOOptimizer.analyze_content().
         
-        Extracts all detailed metrics:
-        - Score and metadata (title, niche, format)
-        - Word count analysis
-        - Readability metrics
-        - Keyword analysis (primary, secondary, missing)
-        - On-page element evaluation
-        - Meta suggestions
-        - Positive/negative points
-        - Actionable recommendations by priority
-        
-        Args:
-            analysis_json: Raw JSON string from SEOOptimizer.analyze_content()
-            
-        Returns:
-            SEOReport: Comprehensive SEO report object
-        """
         try:
             analysis_data = json.loads(analysis_json)
             print(f"✅ Successfully parsed SEO analysis JSON")
@@ -285,6 +300,122 @@ class ContentService:
         )
         
         print(f"📊 SEO Report created - Score: {score}/100 · {score_label}")
+        return seo_report
+
+    def parse_social_analysis(self, analysis_json: str, platform: str = "social") -> SEOReport:
+        """
+        Parse social-media style analysis JSON (Facebook / Twitter / Instagram)
+        and convert it into an `SEOReport`-compatible object so the frontend
+        `SEOReportCard` can render a summary for social posts.
+
+        This performs best-effort mapping of fields:
+        - overall score -> score
+        - post_title -> post_title
+        - character/word usage -> word_count
+        - keywords/hashtags -> primary/secondary/missing
+        - on_page / on_page_elements -> OnPageElement list
+        - recommendations -> SEORecommendation list
+        """
+        try:
+            if isinstance(analysis_json, str):
+                analysis_data = json.loads(analysis_json)
+            else:
+                analysis_data = analysis_json
+        except Exception as e:
+            print(f"❌ Failed to parse social analysis JSON: {e}")
+            raise ValueError(f"Invalid JSON in social analysis: {e}")
+
+        # Score
+        scores = analysis_data.get("scores") or analysis_data.get("scores", {})
+        overall = 0
+        if isinstance(scores, dict):
+            overall = int(scores.get("overall") or scores.get("score") or 0)
+        else:
+            overall = int(analysis_data.get("overall") or 0)
+
+        # Basic metadata
+        post_title = analysis_data.get("post_title") or analysis_data.get("title") or analysis_data.get("hook")
+
+        # Character / word usage
+        word_count = 0
+        cu = analysis_data.get("character_usage") or analysis_data.get("character_usage", [])
+        if isinstance(cu, list) and len(cu) > 0 and isinstance(cu[0], dict):
+            try:
+                word_count = int(cu[0].get("used", 0))
+            except Exception:
+                word_count = 0
+
+        # Keywords
+        primary_keyword = None
+        secondary_keywords = []
+        missing_keywords = []
+        kwh = analysis_data.get("keywords_and_hashtags") or analysis_data.get("keywords", {})
+        items = []
+        if isinstance(kwh, dict):
+            items = kwh.get("items") or []
+
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            t = it.get("text") or it.get("term")
+            typ = it.get("type") or it.get("role")
+            if typ == "primary":
+                primary_keyword = KeywordAnalysis(term=t or "", search_volume=None, keyword_difficulty=None, usage_count=it.get("count", 0), note=it.get("note") or "")
+            elif typ == "secondary":
+                secondary_keywords.append(KeywordAnalysis(term=t or "", search_volume=None, keyword_difficulty=None, usage_count=it.get("count", 0), note=it.get("note") or ""))
+            elif typ == "missing":
+                missing_keywords.append(KeywordAnalysis(term=t or "", search_volume=None, keyword_difficulty=None, usage_count=0, note=it.get("reason") or ""))
+
+        # On-page elements
+        on_page_elements = []
+        opl = analysis_data.get("on_page_elements") or analysis_data.get("on_page") or analysis_data.get("on_page_elements", [])
+        for elem in opl:
+            if isinstance(elem, dict):
+                on_page_elements.append(OnPageElement(
+                    element=elem.get("label") or elem.get("element") or elem.get("name", ""),
+                    status=elem.get("status") or elem.get("result") or "needs_work",
+                    current=elem.get("note") or elem.get("current"),
+                    suggestion=elem.get("note") or elem.get("suggestion"),
+                    priority=("HIGH" if elem.get("status") in ("fail", "high") else "MED")
+                ))
+
+        # Recommendations
+        recommendations = []
+        recs = analysis_data.get("recommendations") or analysis_data.get("recommendations", [])
+        for r in recs:
+            if isinstance(r, dict):
+                recommendations.append(SEORecommendation(
+                    priority=(r.get("priority") or r.get("level") or "MED").upper(),
+                    title=r.get("title") or r.get("action") or r.get("summary") or "",
+                    description=r.get("description") or r.get("action") or "",
+                    category=r.get("category")
+                ))
+
+        seo_report = SEOReport(
+            score=overall or 0,
+            score_label=("Good" if overall >= 70 else "Needs work" if overall >= 45 else "Poor"),
+            post_title=post_title,
+            niche=analysis_data.get("category") or analysis_data.get("niche"),
+            format=analysis_data.get("format"),
+            word_count=word_count,
+            word_count_target=None,
+            word_count_status=analysis_data.get("word_count_status"),
+            readability_score=analysis_data.get("readability", {}).get("flesch_score") if isinstance(analysis_data.get("readability"), dict) else None,
+            readability_level=None,
+            readability_metrics=[],
+            keyword_density=None,
+            primary_keyword=primary_keyword,
+            secondary_keywords=secondary_keywords,
+            missing_keywords=missing_keywords,
+            on_page_elements=on_page_elements,
+            title_suggestion=(analysis_data.get("meta_suggestion") or {}).get("title_tag") if isinstance(analysis_data.get("meta_suggestion"), dict) else None,
+            meta_description_suggestion=(analysis_data.get("meta_suggestion") or {}).get("meta_description") if isinstance(analysis_data.get("meta_suggestion"), dict) else None,
+            positive_points=analysis_data.get("positive_points") or [],
+            negative_points=analysis_data.get("negative_points") or [],
+            recommendations=recommendations
+        )
+
+        print(f"📊 Social SEO Report created - Score: {seo_report.score}/100 · {seo_report.score_label}")
         return seo_report
 
     def generate_content_switch(self, request: Union[BlogArticleRequest, SocialMediaPostRequest, ProductDescriptionRequest]) -> str:

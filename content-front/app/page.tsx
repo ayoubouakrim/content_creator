@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 /* ── Animated typing caption mockup ── */
 function CaptionMockup() {
@@ -142,9 +143,9 @@ function PriceCard({plan,price,desc,features,popular}: {plan: string; price: num
           </li>
         ))}
       </ul>
-      <button className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-px ${popular?"bg-linear-to-r from-violet-500 to-purple-500 text-white hover:shadow-xl hover:shadow-violet-500/30":"bg-white/10 text-white hover:bg-white/20 border border-white/20"}`}>
+      <Link href="/auth/register" className={`w-full inline-flex items-center justify-center py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:-translate-y-px ${popular?"bg-linear-to-r from-violet-500 to-purple-500 text-white hover:shadow-xl hover:shadow-violet-500/30":"bg-white/10 text-white hover:bg-white/20 border border-white/20"}`}>
         {price===0?"Start Free":"Get Started"}
-      </button>
+      </Link>
     </div>
   );
 }
@@ -224,7 +225,7 @@ export default function Home() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled?"bg-black/40 backdrop-blur-xl border-b border-white/10":"bg-transparent"}`}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M4 9Q9 4 14 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
@@ -234,7 +235,7 @@ export default function Home() {
               </svg>
             </div>
             <span className="text-white font-bold text-base tracking-tight">CreatorAI</span>
-          </div>
+          </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
@@ -244,8 +245,8 @@ export default function Home() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <button className="text-white/60 hover:text-white text-sm transition-colors px-3 py-1.5">Sign in</button>
-            <button className="bg-linear-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold px-5 py-2 rounded-xl hover:-translate-y-px hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-200">Start Free</button>
+            <Link href="/auth/login" className="text-white/60 hover:text-white text-sm transition-colors px-3 py-1.5">Sign in</Link>
+            <Link href="/auth/register" className="bg-linear-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold px-5 py-2 rounded-xl hover:-translate-y-px hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-200">Start Free</Link>
           </div>
 
           <button className="md:hidden text-white/60 hover:text-white" onClick={()=>setMenuOpen(v=>!v)}>
@@ -260,7 +261,7 @@ export default function Home() {
             {["Features","Pricing","Use Cases","Blog"].map(n=>(
               <a key={n} href="#" className="text-white/70 hover:text-white text-sm">{n}</a>
             ))}
-            <button className="bg-linear-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl w-full">Start Free</button>
+            <Link href="/auth/register" className="bg-linear-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl w-full">Start Free</Link>
           </div>
         )}
       </nav>
@@ -280,10 +281,7 @@ export default function Home() {
 
         {/* Headline */}
         <div key={activeSlide} className="text-center max-w-3xl mb-4 hero-headline">
-          <div className="inline-flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-0.5 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"/>
-            <span className="text-violet-300 text-xs font-semibold uppercase tracking-wider">{hs.tag}</span>
-          </div>
+          
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-none mb-5 whitespace-pre-line">
             <span className="grad-text">{hs.headline.split("\n")[0]}</span>
             {"\n"}
@@ -294,9 +292,9 @@ export default function Home() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 mb-14 fade-up" style={{animationDelay:"0.2s"}}>
-          <button className="bg-linear-to-r from-violet-500 to-purple-600 text-white font-semibold px-8 py-4 rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/40 transition-all duration-200 text-base">
+          <Link href="/auth/register" className="bg-linear-to-r from-violet-500 to-purple-600 text-white font-semibold px-8 py-4 rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/40 transition-all duration-200 text-base">
             Start Creating Free →
-          </button>
+          </Link>
           <button className="bg-white/10 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/15 transition-all duration-200 text-base flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
             Watch Demo
@@ -500,9 +498,9 @@ export default function Home() {
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Start creating content <span className="grad-text">that converts</span></h2>
             <p className="text-white/50 text-base leading-relaxed mb-8 max-w-md mx-auto">Join 50,000+ creators who've already transformed their content game. Free forever. No credit card required.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button className="bg-linear-to-r from-violet-500 to-purple-600 text-white font-semibold px-10 py-4 rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/40 transition-all duration-200 text-base">
+              <Link href="/auth/register" className="bg-linear-to-r from-violet-500 to-purple-600 text-white font-semibold px-10 py-4 rounded-xl hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/40 transition-all duration-200 text-base">
                 Start Free — No Credit Card
-              </button>
+              </Link>
               <button className="bg-white/10 border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/15 transition-all duration-200 text-base">
                 Talk to Sales
               </button>

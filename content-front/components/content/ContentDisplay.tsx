@@ -13,26 +13,6 @@ const PLATFORM_META = {
   pinterest: { color:"#e60023", bg:"#1a0003", label:"Pinterest",   handle:"Your Board" },
 };
 
-/* ══ PARSE HELPERS ═════════════════════════════════════════════ */
-function parseSocialPosts(text: string, platforms: string[]) {
-  const posts: Record<string, string> = {};
-  const blocks = text.split("---").map((b: string) => b.trim()).filter(Boolean);
-  blocks.forEach((block: string) => {
-    const platformLine = block.match(/^PLATFORM:\s*(.+)/im);
-    if (platformLine) {
-      const name = platformLine[1].trim().toLowerCase();
-      const content = block.replace(/^PLATFORM:\s*.+/im, "").trim();
-      const matched = platforms.find((p: string) =>
-        name.includes(p) || p.includes(name.split(" ")[0])
-      );
-      if (matched) posts[matched] = content;
-    }
-  });
-  if (Object.keys(posts).length === 0) {
-    platforms.forEach((p: string) => { posts[p] = text; });
-  }
-  return posts;
-}
 
 function parseBlog(text: string) {
   const titleMatch = text.match(/TITLE:\s*(.+)/i);
@@ -204,7 +184,7 @@ function InstagramCard({ content }: { content: string }) {
         </div>
         <p className="text-white text-xs font-bold mb-1">{liked?"1,234":"1,233"} likes</p>
         <div className="text-xs text-white/80 leading-relaxed mb-1">
-          <span className="font-bold text-white">yourcreator </span>{caption.slice(0,120)}{caption.length>120?"…":""}
+          <span className="font-bold text-white">yourcreator </span>{caption}
         </div>
         {hashtags && <p className="text-[#e1306c] text-xs">{hashtags.slice(0,80)}</p>}
         <p className="text-white/25 text-[10px] mt-2 uppercase tracking-wide">2 minutes ago</p>
@@ -627,11 +607,9 @@ const POST_TYPES = {
 };
 
 /* ══ MAIN CONTENT DISPLAY COMPONENT ═════════════════════════════ */
-export default function ContentDisplay({ content }: { content: any }) {
+export default function ContentDisplay({ content, activeIndex = 0 }: { content: any; activeIndex?: number }) {
   const router = useRouter();
-  const { body: text, content_type: postType, topic, postType: postTypeField, platforms = [] } = content;
-  const contentType = postTypeField || postType || "blog";
-  const activeType = POST_TYPES[contentType as keyof typeof POST_TYPES] || POST_TYPES.blog;
+  const { postType, posts = [] } = content;
 
   const PLATFORM_COMPONENTS = {
     instagram: InstagramCard,
@@ -642,87 +620,40 @@ export default function ContentDisplay({ content }: { content: any }) {
     pinterest: PinterestCard,
   };
 
-  const socialPosts = contentType === "social" ? parseSocialPosts(text, platforms) : {};
+  const singleText = posts[0]?.content || "";
+  const activePost = posts[activeIndex];
 
   return (
-    <div className="space-y-8">
-      {/* ── BLOG ── */}
-      {contentType === "blog" && (
-        <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-            <span className="text-2xl">✍️</span>
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>Medium-style Article</span>
-          </div>
-          <BlogCard text={text}/>
+    <div className="space-y-6">
+      {postType === "blog" && (
+        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+          <BlogCard text={singleText}/>
         </div>
       )}
 
-      {/* ── SOCIAL MEDIA — one card per platform ── */}
-      {contentType === "social" && (
-        <div className="grid grid-cols-2 gap-10">
-          {platforms.map((pid: any, i: number) => {
-            const PlatformCard = PLATFORM_COMPONENTS[pid as keyof typeof PLATFORM_COMPONENTS];
-            const meta = PLATFORM_META[pid as keyof typeof PLATFORM_META] || {};
-            const content = socialPosts[pid] || text;
-            if (!PlatformCard) return null;
-            return (
-              <div key={pid} className="fade-up" style={{ animationDelay:`${i*0.1}s` }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold text-white"
-                    style={{ background:meta.color }}>
-                    {PLATFORMS.find(p=>p.id===pid)?.label}
-                  </div>
-                  <span className="font-bold text-sm" style={{ color:meta.color, fontFamily:"'DM Sans',sans-serif" }}>{meta.label}</span>
-                  <div className="flex-1 h-px" style={{ background:`linear-gradient(90deg,${meta.color}44,transparent)` }}/>
-                </div>
-                <PlatformCard content={content}/>
-              </div>
-            );
-          })}
+      {postType === "social" && activePost && (() => {
+        const PlatformCard = PLATFORM_COMPONENTS[activePost.platform as keyof typeof PLATFORM_COMPONENTS];
+        if (!PlatformCard) return null;
+        return <div className="fade-up"><PlatformCard content={activePost.content} /></div>;
+      })()}
+
+      {postType === "youtube" && (
+        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+          <YoutubeCard text={singleText}/>
         </div>
       )}
 
-      {/* ── YOUTUBE ── */}
-      {contentType === "youtube" && (
-        <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-            <span className="text-2xl">▶️</span>
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>YouTube Preview</span>
-          </div>
-          <YoutubeCard text={text}/>
+      {postType === "tiktok" && (
+        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+          <TiktokCard text={singleText}/>
         </div>
       )}
 
-      {/* ── TIKTOK ── */}
-      {contentType === "tiktok" && (
-        <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-            <span className="text-2xl">🎵</span>
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>TikTok Preview</span>
-          </div>
-          <TiktokCard text={text}/>
+      {postType === "product" && (
+        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
+          <ProductCard text={singleText}/>
         </div>
       )}
-
-      {/* ── PRODUCT ── */}
-      {contentType === "product" && (
-        <div className="fade-up rounded-3xl border border-white/10 overflow-hidden p-8" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/8">
-            <span className="text-2xl">🛍️</span>
-            <span className="text-white/50 text-xs font-semibold uppercase tracking-widest" style={{ fontFamily:"'DM Sans',sans-serif" }}>Product Listing</span>
-          </div>
-          <ProductCard text={text}/>
-        </div>
-      )}
-
-      {/* Back button */}
-      <div className="text-center mt-12">
-        <button onClick={() => router.push("/content/create")}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/15 bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] transition-all duration-200 cursor-pointer text-sm font-semibold"
-          style={{ fontFamily:"'DM Sans',sans-serif" }}>
-          ← Create Another
-        </button>
-      </div>
     </div>
   );
 }

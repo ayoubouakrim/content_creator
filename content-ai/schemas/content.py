@@ -41,6 +41,7 @@ class SocialMediaPostRequest(BaseModel):
     platform: SocialPlatform = Field(..., description="The social media platform for which the post is intended")
     tone: ToneType = Field(default=ToneType.CASUAL)
     length: int = Field(default=280, description="Approximate character count for the post")
+    platforms: Optional[List[SocialPlatform]] = Field(default=None, description="Optional list of platforms for multi-platform generation")
 
 class ProductDescriptionRequest(BaseModel):
     product_name: str = Field(..., description="The name of the product")

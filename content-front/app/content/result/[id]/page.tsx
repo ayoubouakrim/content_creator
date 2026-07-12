@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import ContentDisplay from "@/components/content/ContentDisplay";
 import SEOReportCard from "@/components/content/SEOReport";
 
-/* ══ RESULTS PAGE ══════════════════════════════════════════════ */
 export default function ResultsPage() {
   const params = useParams();
   const router = useRouter();
@@ -15,6 +14,7 @@ export default function ResultsPage() {
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined" && contentId) {
@@ -60,61 +60,59 @@ export default function ResultsPage() {
     );
   }
 
-  const { topic, seo_report } = content;
+  const posts = content.posts || [];
+  const isMulti = content.postType === "social" && posts.length > 1;
+  const activePost = posts[activeTab] || posts[0];
 
   return (
     <div className="min-h-screen text-white overflow-x-hidden"
-      style={{ fontFamily:"'Sora',sans-serif", background:"radial-gradient(ellipse 120% 80% at 50% -10%,#1a0a3a 0%,#0a1a1a 50%,#060610 100%)" }}>
+      style={{ fontFamily: "'Sora',sans-serif", background: "radial-gradient(ellipse 120% 80% at 50% -10%,#1a0a3a 0%,#0a1a1a 50%,#060610 100%)" }}>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
-        @keyframes spin      { to { transform:rotate(360deg) } }
-        @keyframes fadeUp    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes ringPulse { 0%{transform:scale(1);opacity:.5} 100%{transform:scale(2.2);opacity:0} }
-        @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         .fade-up { animation:fadeUp .5s ease both }
-        ::-webkit-scrollbar       { width:3px }
+        ::-webkit-scrollbar { width:3px }
         ::-webkit-scrollbar-thumb { background:rgba(108,92,231,.45); border-radius:2px }
-        .line-clamp-3 { display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden }
       `}</style>
 
-      {/* Grid */}
-      <div className="fixed inset-0 pointer-events-none z-0"
-        style={{ backgroundImage:"linear-gradient(rgba(108,92,231,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(108,92,231,.04) 1px,transparent 1px)", backgroundSize:"48px 48px" }} />
-      <div className="fixed top-[10%] left-[5%] w-[480px] h-[480px] rounded-full pointer-events-none z-0" style={{ background:"radial-gradient(circle,rgba(108,92,231,.10) 0%,transparent 70%)" }}/>
-      <div className="fixed bottom-[10%] right-[5%] w-[380px] h-[380px] rounded-full pointer-events-none z-0" style={{ background:"radial-gradient(circle,rgba(0,206,201,.07) 0%,transparent 70%)" }}/>
-
-      {/* Nav */}
       <Navbar />
 
-      <div className="relative z-[5] max-w-[1400px] mx-auto px-6 py-12 pb-28">
+      <div className="relative z-[5] max-w-[1200px] mx-auto px-6 py-8 pb-16">
 
-        {/* Header */}
-        <div className="text-center mb-12 fade-up">
-          <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-400/20 rounded-full px-4 py-1.5 mb-5">
-            <span className="text-teal-400 text-xs font-semibold uppercase tracking-widest">Content Ready</span>
-            <span className="text-teal-300">✓</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">
-            <span style={{ background:"linear-gradient(135deg,#c4b5fd 0%,#818cf8 40%,#22d3ee 80%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+        <div className="text-center mb-6 fade-up">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-1">
+            <span style={{ background: "linear-gradient(135deg,#c4b5fd 0%,#818cf8 40%,#22d3ee 80%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               Your content is live
             </span>
           </h1>
-          <p className="text-white/35 text-sm" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-            Topic: <span className="text-white/60 italic">"{topic}"</span>
+          <p className="text-white/35 text-sm" style={{ fontFamily: "'DM Sans',sans-serif" }}>
+            Topic: <span className="text-white/60 italic">"{content.topic}"</span>
           </p>
         </div>
 
-        {/* 2-Column Layout: Content (50%) + SEO Report (50%) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Content Display */}
-          <ContentDisplay content={content} />
+        {isMulti && (
+          <div className="flex justify-center gap-2 mb-6 flex-wrap">
+            {posts.map((post: any, i: number) => (
+              <button
+                key={post.platform}
+                onClick={() => setActiveTab(i)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all capitalize ${
+                  i === activeTab
+                    ? "bg-violet-500/20 border-violet-400/60 text-white"
+                    : "bg-white/5 border-white/10 text-white/40 hover:text-white/70"
+                }`}
+              >
+                {post.platform}
+              </button>
+            ))}
+          </div>
+        )}
 
-          {/* Right Column: SEO Report */}
-          {seo_report && (
-            <div>
-              <SEOReportCard report={seo_report}/>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ContentDisplay content={content} activeIndex={activeTab} />
+          {activePost?.seo_report && (
+            <SEOReportCard report={activePost.seo_report} />
           )}
         </div>
       </div>

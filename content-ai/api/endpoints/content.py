@@ -9,6 +9,8 @@ from schemas.content import (
     ContentResponse,
 )
 from http.client import HTTPException
+from typing import List
+
 
 router = APIRouter()
 content_service = ContentService()
@@ -43,32 +45,36 @@ async def generate_blog_article(request: BlogArticleRequest):
 
 
 # ========== SOCIAL MEDIA ENDPOINT ==========
-@router.post("/generate/social_media_post", response_model=ContentResponse)
+@router.post("/generate/social_media_post", response_model=List[ContentResponse])
 async def generate_social_media_post(request: SocialMediaPostRequest):
     """
     Generate social media posts for specific platforms.
-    - topic: main topic/subject
-    - platform: target platform (twitter, instagram, linkedin, facebook, threads, pinterest)
-    - tone: writing tone (professional, casual, funny, inspirational)
-    - length: character count for the post
+    Returns a list of ContentResponse — one entry per platform.
     """
     try:
         result = content_service.generate_content(request)
-        content_response = ContentResponse(
-            id=1,
-            user_id=1,
-            title=request.topic,
-            body=result["content"],
-            word_count=len(result["content"].split()),
-            content_type="social_media_post",
-            status="generated",
-            created_at="2024-01-01T00:00:00Z",
-            seo_report=result["seo_report"],
-        )
-        return content_response
+        # result is a List[dict] here: [{"content": ..., "seo_report": ...}, ...]
+        # one entry per platform, in the same order as request.platforms
+
+        responses = []
+        for idx, (platform, item) in enumerate(zip(request.platforms, result), start=1):
+            responses.append(
+                ContentResponse(
+                    id=idx,  # TODO: replace with a real unique ID (DB row id or uuid4())
+                    user_id=1,
+                    title=f"{request.topic} — {platform}",
+                    body=item["content"],
+                    word_count=len(item["content"].split()),
+                    content_type="social_media_post",
+                    status="generated",
+                    created_at="2024-01-01T00:00:00Z",
+                    seo_report=item["seo_report"],
+                )
+            )
+        return responses
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # ========== PRODUCT DESCRIPTION ENDPOINT ==========
 @router.post("/generate/product_description", response_model=ContentResponse)
