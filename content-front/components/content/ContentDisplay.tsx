@@ -1,41 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  Copy,
+  Check,
+  FileBarChart,
+  Camera,
+  X,
+  Share2,
+  AtSign,
+  Pin,
+  Play,
+  PenLine,
+  Radio,
+  ShoppingBag,
+  Music2,
+} from "lucide-react";
 
-/* ══ PLATFORM DATA ═════════════════════════════════════════════ */
-const PLATFORM_META = {
-  instagram: { color:"#e1306c", bg:"#1a0010", label:"Instagram",  handle:"@yourcreator" },
-  twitter:   { color:"#1d9bf0", bg:"#00101a", label:"X / Twitter", handle:"@yourcreator" },
-  linkedin:  { color:"#0a66c2", bg:"#000d1a", label:"LinkedIn",    handle:"Your Name" },
-  facebook:  { color:"#1877f2", bg:"#00091a", label:"Facebook",    handle:"Your Page" },
-  threads:   { color:"#a78bfa", bg:"#0d0018", label:"Threads",     handle:"@yourcreator" },
-  pinterest: { color:"#e60023", bg:"#1a0003", label:"Pinterest",   handle:"Your Board" },
-};
-
-
+/* ══ PARSERS (unchanged logic) ══ */
 function parseBlog(text: string) {
   const titleMatch = text.match(/TITLE:\s*(.+)/i);
   const title = titleMatch ? titleMatch[1].trim() : "Untitled";
   const body = text.replace(/TITLE:\s*.+/i, "").trim();
   return { title, body };
 }
-
 function parseYoutube(text: string) {
   const titles: string[] = [];
-  [1,2,3].forEach((n: number) => {
+  [1, 2, 3].forEach((n) => {
     const m = text.match(new RegExp(`TITLE_${n}:\\s*(.+)`, "i"));
     if (m) titles.push(m[1].trim());
   });
   const descMatch = text.match(/DESCRIPTION:\s*([\s\S]*?)(?=TAGS:|$)/i);
   const tagsMatch = text.match(/TAGS:\s*(.+)/i);
   return {
-    titles: titles.length ? titles : ["Your Video Title"],
+    titles: titles.length ? titles : ["Your video title"],
     description: descMatch ? descMatch[1].trim() : text,
-    tags: tagsMatch ? tagsMatch[1].split(",").map((t: string)=>t.trim()) : [],
+    tags: tagsMatch ? tagsMatch[1].split(",").map((t) => t.trim()) : [],
   };
 }
-
 function parseTiktok(text: string) {
   const hookMatch = text.match(/HOOK:\s*([\s\S]*?)(?=CAPTION:|$)/i);
   const captionMatch = text.match(/CAPTION:\s*([\s\S]*?)(?=HASHTAGS:|$)/i);
@@ -48,612 +50,249 @@ function parseTiktok(text: string) {
     script: scriptMatch ? scriptMatch[1].trim() : "",
   };
 }
-
 function parseProduct(text: string) {
   const headlineMatch = text.match(/HEADLINE:\s*(.+)/i);
   const ctaMatch = text.match(/CTA:\s*(.+)/i);
   const headline = headlineMatch ? headlineMatch[1].trim() : "";
   const cta = ctaMatch ? ctaMatch[1].trim() : "";
-  const body = text
-    .replace(/HEADLINE:\s*.+/i, "")
-    .replace(/CTA:\s*.+/i, "")
-    .trim();
+  const body = text.replace(/HEADLINE:\s*.+/i, "").replace(/CTA:\s*.+/i, "").trim();
   return { headline, body, cta };
 }
 
-/* ══ COPY BUTTON ═══════════════════════════════════════════════ */
-function CopyBtn({ text, light = false }: { text?: string; light?: boolean }) {
+/* ══ META — icon + brand color, matching POST_TYPES / PLATFORMS in ContentStudio ══ */
+const PLATFORM_META: Record<string, { icon: any; label: string; color: string }> = {
+  instagram: { icon: Camera, label: "Instagram", color: "#e1306c" },
+  twitter: { icon: X, label: "X / Twitter", color: "#1d9bf0" },
+  linkedin: { icon: Share2, label: "LinkedIn", color: "#0a66c2" },
+  facebook: { icon: FileBarChart, label: "Facebook", color: "#1877f2" },
+  threads: { icon: AtSign, label: "Threads", color: "#a78bfa" },
+  pinterest: { icon: Pin, label: "Pinterest", color: "#e60023" },
+};
+const TYPE_META: Record<string, { icon: any; label: string; color: string }> = {
+  blog: { icon: PenLine, label: "Blog Post", color: "#a78bfa" },
+  social: { icon: Radio, label: "Social Media", color: "#fd79a8" },
+  product: { icon: ShoppingBag, label: "Product Drop", color: "#fbbf24" },
+  youtube: { icon: Play, label: "YouTube", color: "#f87171" },
+  tiktok: { icon: Music2, label: "TikTok", color: "#34d399" },
+};
+
+/* ══ RICH TEXT (same rendering rules as the generation modal) ══ */
+function RichText({ text }: { text: string }) {
+  if (!text) return null;
+  return (
+    <div>
+      {text.split("\n").map((line, i) => {
+        if (line.startsWith("## "))
+          return (
+            <h3 key={i} className="text-violet-300 font-bold text-xs tracking-widest uppercase mt-5 mb-1.5">
+              {line.slice(3)}
+            </h3>
+          );
+        if (line.startsWith("# "))
+          return (
+            <h2 key={i} className="text-white font-extrabold text-lg mt-5 mb-2" style={{ fontFamily: "'Sora',sans-serif" }}>
+              {line.slice(2)}
+            </h2>
+          );
+        if (line.startsWith("- ") || line.startsWith("• "))
+          return (
+            <div key={i} className="flex gap-2 mt-1.5">
+              <span className="text-violet-400 text-xs mt-0.5">▸</span>
+              <span className="text-white/70 text-[13px] leading-relaxed">{line.slice(2)}</span>
+            </div>
+          );
+        if (line === "") return <div key={i} className="h-2.5" />;
+        return (
+          <p key={i} className="text-white/70 text-[13px] leading-relaxed my-1">
+            {line}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══ COPY BTN ══ */
+function CopyBtn({ text }: { text?: string }) {
   const [ok, setOk] = useState(false);
   return (
-    <button onClick={()=>{if(text)navigator.clipboard.writeText(text);setOk(true);setTimeout(()=>setOk(false),2000);}}
-      className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold border cursor-pointer transition-all duration-200 ${
+    <button
+      onClick={() => {
+        if (text) navigator.clipboard.writeText(text);
+        setOk(true);
+        setTimeout(() => setOk(false), 2000);
+      }}
+      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium tracking-wide border cursor-pointer transition-all duration-200 flex items-center gap-1.5 ${
         ok
-          ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-300"
-          : light
-            ? "bg-black/10 border-black/20 text-black/50 hover:bg-black/20"
-            : "bg-white/8 border-white/15 text-white/50 hover:bg-white/15 hover:text-white/80"
+          ? "bg-teal-500/15 border-teal-400/40 text-teal-300"
+          : "bg-white/5 border-white/10 text-white/40 hover:text-white/70 hover:bg-white/10"
       }`}
-      style={{ fontFamily:"'DM Sans',sans-serif" }}>
-      {ok ? "✓ Copied" : "⎘ Copy"}
+    >
+      {ok ? <Check size={12} strokeWidth={2.5} /> : <Copy size={12} strokeWidth={1.75} />}
+      {ok ? "Copied" : "Copy"}
     </button>
   );
 }
 
-/* ══ BLOG RENDERER ═════════════════════════════════════════════ */
-function BlogCard({ text }: { text: string }) {
-  const { title, body } = parseBlog(text);
-  const lines = body.split("\n");
-  return (
-    <div className="max-w-[720px] mx-auto">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
-          style={{ background:"linear-gradient(135deg,#6C5CE7,#a78bfa)" }}>C</div>
-        <div>
-          <p className="text-white/80 font-semibold text-sm" style={{ fontFamily:"'DM Sans',sans-serif" }}>Your Creator</p>
-          <p className="text-white/30 text-xs" style={{ fontFamily:"'DM Sans',sans-serif" }}>Published just now · 5 min read</p>
-        </div>
-        <div className="ml-auto flex gap-2">
-          <button className="px-4 py-1.5 rounded-full text-xs font-semibold bg-violet-500/20 border border-violet-400/30 text-violet-300 cursor-pointer transition-all hover:bg-violet-500/30"
-            style={{ fontFamily:"'DM Sans',sans-serif" }}>Follow</button>
-          <CopyBtn text={text}/>
-        </div>
-      </div>
-
-      <h1 className="text-white font-extrabold text-3xl leading-tight tracking-tight mb-4"
-        style={{ fontFamily:"'Sora',sans-serif" }}>{title}</h1>
-
-      <div className="flex items-center gap-4 pb-6 mb-6 border-b border-white/10">
-        <span className="text-white/30 text-xs" style={{ fontFamily:"'DM Sans',sans-serif" }}>Content Studio · AI-Generated</span>
-        <div className="flex gap-1.5 ml-auto">
-          {["♡ Like","💬 Comment","🔖 Save"].map(a=>(
-            <button key={a} className="text-xs text-white/30 bg-white/5 border border-white/8 rounded-full px-3 py-1 hover:text-white/60 cursor-pointer transition-colors"
-              style={{ fontFamily:"'DM Sans',sans-serif" }}>{a}</button>
-          ))}
-        </div>
-      </div>
-
-      <div className="prose prose-invert max-w-none">
-        {lines.map((line: string, i: number) => {
-          if (line.startsWith("## "))
-            return <h2 key={i} className="text-white font-bold text-xl mt-8 mb-3 tracking-tight" style={{ fontFamily:"'Sora',sans-serif" }}>{line.slice(3)}</h2>;
-          if (line.startsWith("# "))
-            return <h1 key={i} className="text-white font-extrabold text-2xl mt-8 mb-3" style={{ fontFamily:"'Sora',sans-serif" }}>{line.slice(2)}</h1>;
-          if (line.startsWith("- ") || line.startsWith("• "))
-            return <div key={i} className="flex gap-3 my-2"><span className="text-violet-400 mt-1">•</span><span className="text-white/70 text-sm leading-relaxed" style={{ fontFamily:"'DM Sans',sans-serif" }}>{line.slice(2)}</span></div>;
-          if (line === "") return <div key={i} className="h-4"/>;
-          return <p key={i} className="text-white/65 text-sm leading-loose mb-2" style={{ fontFamily:"'DM Sans',sans-serif" }}>{line}</p>;
-        })}
-      </div>
-
-      <div className="flex items-center gap-4 mt-10 pt-6 border-t border-white/10">
-        <button className="flex items-center gap-2 text-white/40 text-sm hover:text-white/70 cursor-pointer transition-colors bg-transparent border-none" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-          <span className="text-lg">👏</span> Clap
-        </button>
-        <button className="flex items-center gap-2 text-white/40 text-sm hover:text-white/70 cursor-pointer transition-colors bg-transparent border-none" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-          <span className="text-lg">💬</span> Respond
-        </button>
-        <button className="flex items-center gap-2 text-white/40 text-sm hover:text-white/70 cursor-pointer transition-colors bg-transparent border-none" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-          <span className="text-lg">🔗</span> Share
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ══ INSTAGRAM CARD ════════════════════════════════════════════ */
-function InstagramCard({ content }: { content: string }) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const lines = content.split("\n");
-  const caption = lines.filter((l: string) => !l.startsWith("#")).join(" ").trim();
-  const hashtags = lines.filter((l: string) => l.includes("#")).join(" ");
-
-  return (
-    <div className="w-full max-w-[400px] mx-auto rounded-2xl overflow-hidden border border-white/10"
-      style={{ background:"#0a0a0a", fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/8">
-        <div className="w-8 h-8 rounded-full p-[2px]" style={{ background:"linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7)" }}>
-          <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center text-xs font-bold text-white">C</div>
-        </div>
-        <div className="flex-1">
-          <p className="text-white text-xs font-bold">yourcreator</p>
-          <p className="text-white/40 text-[10px]">Sponsored</p>
-        </div>
-        <span className="text-white/40 text-lg cursor-pointer">···</span>
-      </div>
-
-      <div className="w-full aspect-square flex items-center justify-center relative overflow-hidden"
-        style={{ background:"linear-gradient(135deg,#1a0030,#0d001a,#00101a)" }}>
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage:"radial-gradient(circle at 30% 70%,#e1306c,transparent 50%),radial-gradient(circle at 70% 30%,#833ab4,transparent 50%)" }}/>
-        <div className="text-center z-10">
-          <p className="text-6xl mb-3">📸</p>
-          <p className="text-white/30 text-xs">Your image here</p>
-        </div>
-      </div>
-
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-4 mb-3">
-          <button onClick={()=>setLiked(v=>!v)} className="text-2xl bg-transparent border-none cursor-pointer transition-transform hover:scale-110 active:scale-90">
-            {liked ? "❤️" : "🤍"}
-          </button>
-          <span className="text-xl cursor-pointer">💬</span>
-          <span className="text-xl cursor-pointer">↗</span>
-          <button onClick={()=>setSaved(v=>!v)} className="ml-auto text-xl bg-transparent border-none cursor-pointer">
-            {saved ? "🔖" : "🏷️"}
-          </button>
-        </div>
-        <p className="text-white text-xs font-bold mb-1">{liked?"1,234":"1,233"} likes</p>
-        <div className="text-xs text-white/80 leading-relaxed mb-1">
-          <span className="font-bold text-white">yourcreator </span>{caption}
-        </div>
-        {hashtags && <p className="text-[#e1306c] text-xs">{hashtags.slice(0,80)}</p>}
-        <p className="text-white/25 text-[10px] mt-2 uppercase tracking-wide">2 minutes ago</p>
-      </div>
-
-      <div className="px-4 pb-3 flex justify-end">
-        <CopyBtn text={content}/>
-      </div>
-    </div>
-  );
-}
-
-/* ══ TWITTER CARD ══════════════════════════════════════════════ */
-function TwitterCard({ content }: { content: string }) {
-  const [liked, setLiked] = useState(false);
-  const [retweeted, setRetweeted] = useState(false);
-  return (
-    <div className="w-full max-w-[520px] mx-auto rounded-2xl border border-white/10 overflow-hidden"
-      style={{ background:"#000", fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="p-4">
-        <div className="flex gap-3">
-          <div className="w-10 h-10 rounded-full bg-sky-600 flex items-center justify-center text-sm font-bold text-white shrink-0">C</div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-white font-bold text-sm">Your Creator</span>
-              <span className="text-white/40 text-xs">@yourcreator · now</span>
-              <div className="ml-auto w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center shrink-0">
-                <span className="text-white text-[10px] font-black">𝕏</span>
-              </div>
-            </div>
-            <p className="text-white/85 text-sm leading-relaxed whitespace-pre-line">{content}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 py-3 border-t border-white/8">
-        <div className="flex gap-6">
-          {[
-            { icon:"💬", val:"24", label:"Reply" },
-            { icon:retweeted?"🔁":"↩", val:retweeted?"1.2K":"1.1K", label:"Repost", fn:()=>setRetweeted(v=>!v), active:retweeted, activeColor:"#00b894" },
-            { icon:liked?"❤️":"🤍", val:liked?"4.6K":"4.5K", label:"Like", fn:()=>setLiked(v=>!v), active:liked, activeColor:"#e1306c" },
-            { icon:"📊", val:"18K", label:"Views" },
-          ].map(a=>(
-            <button key={a.label} onClick={a.fn}
-              className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-xs transition-colors group"
-              style={{ color:a.active?a.activeColor:"rgba(255,255,255,.4)" }}>
-              <span className="text-base group-hover:scale-110 transition-transform inline-block">{a.icon}</span>
-              <span>{a.val}</span>
-            </button>
-          ))}
-          <div className="ml-auto">
-            <CopyBtn text={content}/>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══ LINKEDIN CARD ═════════════════════════════════════════════ */
-function LinkedInCard({ content }: { content: string }) {
-  const [reacted, setReacted] = useState(false);
-  return (
-    <div className="w-full max-w-[560px] mx-auto rounded-2xl border border-white/10 overflow-hidden"
-      style={{ background:"#1b1f23", fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="p-4">
-        <div className="flex gap-3 mb-3">
-          <div className="w-12 h-12 rounded-full bg-sky-700 flex items-center justify-center text-base font-bold text-white shrink-0">C</div>
-          <div>
-            <p className="text-white font-semibold text-sm">Your Creator</p>
-            <p className="text-white/40 text-xs">Content Creator • 2nd</p>
-            <p className="text-white/25 text-[10px]">Just now · 🌐</p>
-          </div>
-          <button className="ml-auto text-sky-400 text-xs font-semibold border border-sky-500/40 rounded-full px-3 py-1 hover:bg-sky-500/10 cursor-pointer transition-colors bg-transparent">
-            + Follow
-          </button>
-        </div>
-
-        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line mb-3">{content}</p>
-      </div>
-
-      <div className="px-4 pb-2 flex items-center justify-between text-white/30 text-xs border-t border-white/8 pt-2">
-        <span>👍 ❤️ 💡 · 847 reactions</span>
-        <span>94 comments</span>
-      </div>
-
-      <div className="flex border-t border-white/8">
-        {[
-          { icon:reacted?"👍":"👍", label:reacted?"Liked":"Like", fn:()=>setReacted(v=>!v) },
-          { icon:"💬", label:"Comment" },
-          { icon:"🔄", label:"Repost" },
-          { icon:"↗", label:"Send" },
-        ].map(a=>(
-          <button key={a.label} onClick={a.fn}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-white/40 hover:bg-white/5 cursor-pointer transition-colors border-none bg-transparent"
-            style={{ color:a.label==="Liked"?"#0a66c2":undefined }}>
-            <span>{a.icon}</span><span>{a.label}</span>
-          </button>
-        ))}
-        <div className="flex items-center px-3">
-          <CopyBtn text={content}/>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══ FACEBOOK CARD ═════════════════════════════════════════════ */
-function FacebookCard({ content }: { content: string }) {
-  const [liked, setLiked] = useState(false);
-  return (
-    <div className="w-full max-w-[520px] mx-auto rounded-2xl border border-white/10 overflow-hidden"
-      style={{ background:"#242526", fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="p-4">
-        <div className="flex gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white shrink-0">C</div>
-          <div>
-            <p className="text-white font-semibold text-sm">Your Page</p>
-            <p className="text-white/40 text-[10px]">Just now · 🌐</p>
-          </div>
-          <div className="ml-auto flex gap-2 items-center">
-            <button className="text-xs bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-md px-3 py-1 cursor-pointer hover:bg-blue-600/30 transition-colors">+ Follow</button>
-            <span className="text-white/30 cursor-pointer">···</span>
-          </div>
-        </div>
-        <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{content}</p>
-      </div>
-
-      <div className="px-4 pb-2 flex justify-between text-white/30 text-xs">
-        <span>👍 ❤️ 😮 &nbsp;1.2K</span>
-        <span>84 Comments · 23 Shares</span>
-      </div>
-
-      <div className="flex border-t border-white/10 mx-2">
-        {[
-          { icon:liked?"👍":"👍", label:liked?"Liked":"Like", fn:()=>setLiked(v=>!v) },
-          { icon:"💬", label:"Comment" },
-          { icon:"↗", label:"Share" },
-        ].map(a=>(
-          <button key={a.label} onClick={a.fn}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs cursor-pointer hover:bg-white/5 transition-colors border-none bg-transparent"
-            style={{ color:a.label==="Liked"?"#1877f2":"rgba(255,255,255,.4)" }}>
-            <span>{a.icon}</span><span className="font-medium">{a.label}</span>
-          </button>
-        ))}
-        <div className="flex items-center px-3">
-          <CopyBtn text={content}/>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══ THREADS CARD ══════════════════════════════════════════════ */
-function ThreadsCard({ content }: { content: string }) {
-  const [liked, setLiked] = useState(false);
-  return (
-    <div className="w-full max-w-[460px] mx-auto rounded-2xl border border-white/10 overflow-hidden"
-      style={{ background:"#101010", fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="p-4">
-        <div className="flex gap-3">
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-sm font-bold text-white shrink-0">C</div>
-            <div className="w-px flex-1 bg-white/10 mt-1"/>
-          </div>
-          <div className="flex-1 pb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-white font-bold text-sm">yourcreator</span>
-              <span className="text-white/30 text-xs">· now</span>
-              <span className="ml-auto text-white/20 text-base cursor-pointer">···</span>
-            </div>
-            <p className="text-white/80 text-sm leading-relaxed whitespace-pre-line">{content}</p>
-            <div className="flex gap-4 mt-3">
-              <button onClick={()=>setLiked(v=>!v)} className="flex items-center gap-1 text-xs text-white/40 bg-transparent border-none cursor-pointer hover:text-white/70 transition-colors">
-                <span className="text-base">{liked?"❤️":"🤍"}</span> {liked?124:123}
-              </button>
-              <button className="flex items-center gap-1 text-xs text-white/40 bg-transparent border-none cursor-pointer hover:text-white/70 transition-colors">
-                <span className="text-base">💬</span> 18
-              </button>
-              <button className="flex items-center gap-1 text-xs text-white/40 bg-transparent border-none cursor-pointer hover:text-white/70 transition-colors">
-                <span className="text-base">🔁</span> 34
-              </button>
-              <button className="flex items-center gap-1 text-xs text-white/40 bg-transparent border-none cursor-pointer hover:text-white/70 transition-colors">
-                <span className="text-base">↗</span>
-              </button>
-              <div className="ml-auto">
-                <CopyBtn text={content}/>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══ PINTEREST CARD ════════════════════════════════════════════ */
-function PinterestCard({ content }: { content: string }) {
-  const [saved, setSaved] = useState(false);
-  return (
-    <div className="w-full max-w-[320px] mx-auto rounded-2xl overflow-hidden border border-white/10"
-      style={{ background:"#1a0003", fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="w-full aspect-[3/4] relative flex items-end justify-end"
-        style={{ background:"linear-gradient(160deg,#2d0008,#1a0003,#0d0012)" }}>
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage:"radial-gradient(circle at 50% 30%,#e60023,transparent 60%)" }}/>
-        <div className="absolute inset-0 flex items-center justify-center"><span className="text-7xl opacity-30">📌</span></div>
-        <button onClick={()=>setSaved(v=>!v)}
-          className="m-3 px-4 py-2 rounded-full text-sm font-bold cursor-pointer border-none transition-all"
-          style={{ background:saved?"#6C5CE7":"#e60023", color:"white" }}>
-          {saved?"Saved ✓":"Save"}
-        </button>
-      </div>
-      <div className="p-4">
-        <p className="text-white text-sm font-semibold mb-2 leading-snug">{content.slice(0, 80)}{content.length>80?"…":""}</p>
-        <p className="text-white/40 text-xs mb-3 leading-relaxed">{content.slice(80,180)}</p>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-red-600 flex items-center justify-center text-[10px] font-bold text-white">C</div>
-          <span className="text-white/50 text-xs">yourcreator</span>
-          <div className="ml-auto">
-            <CopyBtn text={content}/>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══ YOUTUBE RENDERER ══════════════════════════════════════════ */
-function YoutubeCard({ text }: { text: string }) {
-  const { titles, description, tags } = parseYoutube(text);
-  const [selectedTitle, setSelectedTitle] = useState(0);
-  const [subbed, setSubbed] = useState(false);
-  return (
-    <div className="max-w-[760px] mx-auto" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="w-full aspect-video rounded-2xl overflow-hidden relative flex items-center justify-center mb-4"
-        style={{ background:"linear-gradient(160deg,#1a0005,#0d0010,#00040d)" }}>
-        <div className="absolute inset-0 opacity-15" style={{ backgroundImage:"radial-gradient(circle at 30% 50%,#f87171,transparent 50%),radial-gradient(circle at 70% 50%,#7c3aed,transparent 50%)" }}/>
-        <button className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-white text-2xl cursor-pointer hover:scale-110 transition-transform z-10 border-none">▶</button>
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-          <div className="h-full w-1/3 bg-red-600 rounded-r"/>
-        </div>
-        <div className="absolute bottom-3 right-4 text-white/60 text-xs">2:34 / 10:12</div>
-      </div>
-
-      <div className="mb-3">
-        <p className="text-white/30 text-[10px] uppercase tracking-widest mb-2">Choose your title</p>
-        {titles.map((t,i)=>(
-          <button key={i} onClick={()=>setSelectedTitle(i)}
-            className="w-full text-left px-4 py-3 rounded-xl mb-1.5 border cursor-pointer transition-all duration-200"
-            style={{ background:selectedTitle===i?"rgba(248,113,113,.12)":"rgba(255,255,255,.03)",
-              borderColor:selectedTitle===i?"rgba(248,113,113,.5)":"rgba(255,255,255,.08)" }}>
-            <span className="text-white font-semibold text-sm">{t}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-3 py-4 border-t border-b border-white/10 mb-4">
-        <div className="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center font-bold text-white text-sm">C</div>
-        <div className="flex-1">
-          <p className="text-white font-semibold text-sm">Your Channel</p>
-          <p className="text-white/40 text-xs">12.4K subscribers</p>
-        </div>
-        <button onClick={()=>setSubbed(v=>!v)}
-          className="px-4 py-2 rounded-full text-sm font-bold cursor-pointer border-none transition-all"
-          style={{ background:subbed?"rgba(255,255,255,.1)":"#e60023", color:"white" }}>
-          {subbed?"Subscribed ✓":"Subscribe"}
-        </button>
-        <CopyBtn text={text}/>
-      </div>
-
-      <div className="rounded-xl p-4 border border-white/8 mb-4" style={{ background:"rgba(255,255,255,.04)" }}>
-        <div className="flex gap-3 text-xs text-white/40 mb-3" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-          <span>234K views</span><span>·</span><span>Just now</span>
-        </div>
-        <p className="text-white/70 text-sm leading-relaxed whitespace-pre-line">{description}</p>
-      </div>
-
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag: string, i: number)=>(
-            <span key={i} className="text-xs px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-300">#{tag}</span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ══ TIKTOK RENDERER ═══════════════════════════════════════════ */
-function TiktokCard({ text }: { text: string }) {
-  const { hook, caption, hashtags, script } = parseTiktok(text);
-  return (
-    <div className="max-w-[380px] mx-auto" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="relative mx-auto w-[340px] rounded-[36px] overflow-hidden border-2 border-white/15"
-        style={{ background:"#000", minHeight:580 }}>
-
-        <div className="relative w-full" style={{ height:440, background:"linear-gradient(160deg,#001a10,#0d001a,#001010)" }}>
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage:"radial-gradient(circle at 40% 60%,#34d399,transparent 50%),radial-gradient(circle at 60% 30%,#6366f1,transparent 50%)" }}/>
-
-          <div className="absolute right-3 bottom-16 flex flex-col items-center gap-5">
-            {[
-              { icon:"❤️", val:"42K" },
-              { icon:"💬", val:"1.2K" },
-              { icon:"🔖", val:"8.4K" },
-              { icon:"↗", val:"Share" },
-            ].map(a=>(
-              <div key={a.icon} className="flex flex-col items-center gap-0.5 cursor-pointer">
-                <span className="text-2xl">{a.icon}</span>
-                <span className="text-white text-[10px] font-bold">{a.val}</span>
-              </div>
-            ))}
-            <div className="w-9 h-9 rounded-full border-2 border-white/30 flex items-center justify-center"
-              style={{ background:"linear-gradient(135deg,#34d399,#6366f1)", animation:"spin 4s linear infinite" }}>
-              <div className="w-3 h-3 rounded-full bg-black"/>
-            </div>
-          </div>
-
-          {hook && (
-            <div className="absolute top-6 left-4 right-16">
-              <div className="bg-black/50 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-                <p className="text-[10px] text-teal-400 uppercase tracking-widest mb-1 font-bold">3-Second Hook</p>
-                <p className="text-white text-xs font-semibold leading-snug">"{hook}"</p>
-              </div>
-            </div>
-          )}
-
-          <div className="absolute bottom-3 left-3 right-14">
-            <p className="text-white text-xs font-bold mb-1">@yourcreator</p>
-            <p className="text-white/80 text-xs leading-relaxed line-clamp-3">{caption.slice(0,100)}</p>
-            <p className="text-teal-300 text-[10px] mt-1">{hashtags.slice(0,60)}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-around py-3 border-t border-white/10"
-          style={{ background:"#111" }}>
-          {["🏠","🔍","＋","📮","👤"].map(i=>(
-            <span key={i} className="text-xl cursor-pointer">{i}</span>
-          ))}
-        </div>
-      </div>
-
-      {script && (
-        <div className="mt-5 rounded-xl p-4 border border-teal-500/20" style={{ background:"rgba(52,211,153,.06)" }}>
-          <p className="text-teal-400 text-[10px] font-bold uppercase tracking-widest mb-2">Script Idea</p>
-          <p className="text-white/70 text-xs leading-relaxed">{script}</p>
-        </div>
-      )}
-
-      <div className="flex justify-end mt-3">
-        <CopyBtn text={text}/>
-      </div>
-    </div>
-  );
-}
-
-/* ══ PRODUCT RENDERER ══════════════════════════════════════════ */
-function ProductCard({ text }: { text: string }) {
-  const { headline, body, cta } = parseProduct(text);
-  const lines = body.split("\n").filter(Boolean);
-  return (
-    <div className="max-w-[640px] mx-auto" style={{ fontFamily:"'DM Sans',sans-serif" }}>
-      <div className="rounded-2xl overflow-hidden mb-5">
-        <div className="w-full h-48 flex items-center justify-center relative"
-          style={{ background:"linear-gradient(135deg,#1a1000,#0d0a00,#1a0a00)" }}>
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage:"radial-gradient(circle at 50% 50%,#fbbf24,transparent 60%)" }}/>
-          <span className="text-7xl z-10">🛍️</span>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ background:"rgba(255,255,255,.03)" }}>
-        <div className="p-6">
-          {headline && <h2 className="text-white font-extrabold text-2xl tracking-tight mb-4 leading-tight" style={{ fontFamily:"'Sora',sans-serif" }}>{headline}</h2>}
-
-          <div className="flex flex-col gap-2 mb-5">
-            {lines.filter((l: string)=>l.startsWith("-")||l.startsWith("•")).map((l: string, i: number)=>(
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-amber-400 text-[10px]">✓</span>
-                </div>
-                <span className="text-white/70 text-sm leading-relaxed">{l.slice(2)}</span>
-              </div>
-            ))}
-          </div>
-
-          {lines.filter((l: string)=>!l.startsWith("-")&&!l.startsWith("•")).map((l: string, i: number)=>(
-            <p key={i} className="text-white/55 text-sm leading-relaxed mb-2">{l}</p>
-          ))}
-        </div>
-
-        <div className="p-4 border-t border-white/8 flex items-center gap-3" style={{ background:"rgba(251,191,36,.05)" }}>
-          {cta && (
-            <button className="flex-1 py-3 rounded-xl font-bold text-sm text-black cursor-pointer border-none transition-all hover:-translate-y-0.5 hover:shadow-lg"
-              style={{ background:"linear-gradient(135deg,#fbbf24,#f59e0b)", fontFamily:"'Sora',sans-serif" }}>
-              {cta}
-            </button>
-          )}
-          <CopyBtn text={text}/>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══ PLATFORM DEFINITIONS ══════════════════════════════════════ */
-const PLATFORMS = [
-  { id: "instagram", label: "IG", icon: "📷" },
-  { id: "twitter",   label: "X",  icon: "𝕏" },
-  { id: "linkedin",  label: "in", icon: "💼" },
-  { id: "facebook",  label: "f",  icon: "📘" },
-  { id: "threads",   label: "@",  icon: "🧵" },
-  { id: "pinterest", label: "P",  icon: "📌" },
-];
-
-const POST_TYPES = {
-  blog:    { icon: "✍️",  label: "Blog Article" },
-  social:  { icon: "📱", label: "Social Media" },
-  youtube: { icon: "▶️",  label: "YouTube" },
-  tiktok:  { icon: "🎵", label: "TikTok" },
-  product: { icon: "🛍️", label: "Product" },
-};
-
-/* ══ MAIN CONTENT DISPLAY COMPONENT ═════════════════════════════ */
-export default function ContentDisplay({ content, activeIndex = 0 }: { content: any; activeIndex?: number }) {
-  const router = useRouter();
+/* ══ MAIN ══ */
+export default function ContentDisplay({
+  content,
+  activeIndex = 0,
+  reportOpen,
+  onToggleReport,
+}: {
+  content: any;
+  activeIndex?: number;
+  reportOpen: boolean;
+  onToggleReport: () => void;
+}) {
   const { postType, posts = [] } = content;
+  const activePost = posts[activeIndex] || posts[0];
+  const text = activePost?.content || "";
+  const hasReport = !!activePost?.seo_report;
 
-  const PLATFORM_COMPONENTS = {
-    instagram: InstagramCard,
-    twitter:   TwitterCard,
-    linkedin:  LinkedInCard,
-    facebook:  FacebookCard,
-    threads:   ThreadsCard,
-    pinterest: PinterestCard,
-  };
+  const typeMeta = TYPE_META[postType] ?? { icon: PenLine, label: postType, color: "#a78bfa" };
+  const platformMeta = postType === "social" && activePost ? PLATFORM_META[activePost.platform] : null;
+  const Icon = platformMeta?.icon ?? typeMeta.icon;
+  const label = platformMeta?.label ?? typeMeta.label;
+  const accent = platformMeta?.color ?? typeMeta.color;
 
-  const singleText = posts[0]?.content || "";
-  const activePost = posts[activeIndex];
+  const blog = postType === "blog" ? parseBlog(text) : null;
+  const yt = postType === "youtube" ? parseYoutube(text) : null;
+  const [ytSelected, setYtSelected] = useState(0);
+  const tk = postType === "tiktok" ? parseTiktok(text) : null;
+  const pr = postType === "product" ? parseProduct(text) : null;
 
   return (
-    <div className="space-y-6">
-      {postType === "blog" && (
-        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <BlogCard text={singleText}/>
+    <div
+      className="rounded-3xl overflow-hidden backdrop-blur-2xl"
+      style={{
+        background: "rgba(6,4,18,.9)",
+        border: "1px solid rgba(108,92,231,.25)",
+        boxShadow: "0 0 60px rgba(108,92,231,.10), 0 30px 60px rgba(0,0,0,.5)",
+      }}
+    >
+      {/* chrome bar — same language as the generation terminal */}
+      <div
+        className="flex items-center justify-between px-5 py-3.5 border-b"
+        style={{ borderColor: "rgba(108,92,231,.2)", background: "rgba(108,92,231,.06)" }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="flex gap-1.5">
+            {["#f87171", "#fbbf24", "#4ade80"].map((c) => (
+              <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />
+            ))}
+          </div>
+          <Icon size={13} strokeWidth={2} color={accent} />
+          <span className="text-white/40 text-[11px] tracking-widest uppercase">{label}</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-teal-400" style={{ animation: "ringPulse 1.5s ease-out infinite" }} />
         </div>
-      )}
-
-      {postType === "social" && activePost && (() => {
-        const PlatformCard = PLATFORM_COMPONENTS[activePost.platform as keyof typeof PLATFORM_COMPONENTS];
-        if (!PlatformCard) return null;
-        return <div className="fade-up"><PlatformCard content={activePost.content} /></div>;
-      })()}
-
-      {postType === "youtube" && (
-        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <YoutubeCard text={singleText}/>
+        <div className="flex items-center gap-2">
+          {hasReport && (
+            <button
+              onClick={onToggleReport}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-semibold tracking-wide border cursor-pointer transition-all duration-200 flex items-center gap-1.5"
+              style={{
+                background: reportOpen ? "rgba(108,92,231,.22)" : "rgba(108,92,231,.08)",
+                borderColor: "rgba(108,92,231,.5)",
+                color: "#c4b5fd",
+              }}
+            >
+              <FileBarChart size={12} strokeWidth={2} />
+              {reportOpen ? "Hide report" : "SEO report"}
+            </button>
+          )}
+          <CopyBtn text={text} />
         </div>
-      )}
+      </div>
 
-      {postType === "tiktok" && (
-        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <TiktokCard text={singleText}/>
-        </div>
-      )}
+      {/* body */}
+      <div className="px-7 py-7">
+        {postType === "blog" && blog && (
+          <>
+            <h1 className="text-white font-extrabold text-2xl leading-tight mb-4" style={{ fontFamily: "'Sora',sans-serif" }}>
+              {blog.title}
+            </h1>
+            <RichText text={blog.body} />
+          </>
+        )}
 
-      {postType === "product" && (
-        <div className="fade-up rounded-2xl border border-white/10 overflow-hidden p-5" style={{ background:"rgba(6,4,18,.8)", backdropFilter:"blur(20px)" }}>
-          <ProductCard text={singleText}/>
-        </div>
-      )}
+        {postType === "social" && <RichText text={text} />}
+
+        {postType === "youtube" && yt && (
+          <>
+            <p className="text-white/25 text-[10px] tracking-widest uppercase mb-2">Title options</p>
+            <div className="mb-5">
+              {yt.titles.map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => setYtSelected(i)}
+                  className="block w-full text-left rounded-xl px-3 py-2.5 mb-1.5 border cursor-pointer transition-all"
+                  style={{
+                    background: ytSelected === i ? "rgba(248,113,113,.1)" : "rgba(255,255,255,.02)",
+                    borderColor: ytSelected === i ? "rgba(248,113,113,.4)" : "rgba(255,255,255,.06)",
+                  }}
+                >
+                  <span className="text-white font-semibold text-[13px]">{t}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-white/25 text-[10px] tracking-widest uppercase mb-2">Description</p>
+            <RichText text={yt.description} />
+            {yt.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-4">
+                {yt.tags.map((tag, i) => (
+                  <span key={i} className="text-[10.5px] px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-300">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {postType === "tiktok" && tk && (
+          <>
+            {tk.hook && (
+              <div className="mb-4">
+                <p className="text-[10px] tracking-widest uppercase mb-1.5" style={{ color: "#34d399" }}>
+                  3-second hook
+                </p>
+                <p className="text-white font-bold text-base leading-snug" style={{ fontFamily: "'Sora',sans-serif" }}>
+                  {tk.hook}
+                </p>
+              </div>
+            )}
+            <RichText text={tk.caption} />
+            {tk.hashtags && <p className="text-teal-300/70 text-[11.5px] mt-2">{tk.hashtags}</p>}
+            {tk.script && (
+              <div className="mt-5 pt-4 border-t border-white/8">
+                <p className="text-white/25 text-[10px] tracking-widest uppercase mb-2">Script idea</p>
+                <RichText text={tk.script} />
+              </div>
+            )}
+          </>
+        )}
+
+        {postType === "product" && pr && (
+          <>
+            {pr.headline && (
+              <h1 className="text-white font-extrabold text-xl mb-4" style={{ fontFamily: "'Sora',sans-serif" }}>
+                {pr.headline}
+              </h1>
+            )}
+            <RichText text={pr.body} />
+            {pr.cta && (
+              <button
+                className="mt-5 px-5 py-3 rounded-xl font-bold text-sm text-black cursor-pointer border-none"
+                style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)", fontFamily: "'Sora',sans-serif" }}
+              >
+                {pr.cta}
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
