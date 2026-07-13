@@ -1,15 +1,18 @@
-import { useState } from "react";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-    const [activeNav, setActiveNav] = useState("home");
+    const pathname = usePathname();
 
     const navItems = [
         {
-            id: "home", label: "Home",
+            id: "home", label: "Home", href: "/dashboard",
             icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9,22 9,12 15,12 15,22" /></svg>,
         },
         {
-            id: "create", label: "Create",
+            id: "create", label: "Create", href: "/content/create",
             icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>,
         },
         {
@@ -30,14 +33,20 @@ export default function Navbar() {
         },
     ];
 
+    const isActive = (itemId: string) => {
+        if (itemId === "home") return pathname === "/dashboard";
+        if (itemId === "create") return pathname === "/content/create";
+        return false;
+    };
+
     return (
         <nav
-            className="flex items-center px-6 h-[60px] gap-1 sticky top-0 z-[100] flex-shrink-0"
+            className="flex items-center px-6 h-15 gap-1 sticky top-0 z-100 shrink-0"
             style={{ background: "linear-gradient(135deg,#1a1040 0%,#2d1b69 100%)" }}
         >
             {/* Logo */}
             <div
-                className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center mr-5 flex-shrink-0"
+                className="w-8.5 h-8.5 rounded-[10px] flex items-center justify-center mr-5 shrink-0"
                 style={{ background: "linear-gradient(135deg,#6C5CE7,#a78bfa)" }}
             >
                 <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
@@ -51,18 +60,32 @@ export default function Navbar() {
             {/* Nav items */}
             <div className="flex items-center gap-0.5 flex-1">
                 {navItems.map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveNav(item.id)}
-                        className={`relative flex items-center gap-[7px] px-3.5 py-2 rounded-[10px] border-none cursor-pointer font-[Sora,sans-serif] text-[13px] font-semibold transition-all duration-200
-                  ${activeNav === item.id
-                                ? "bg-[rgba(108,92,231,0.25)] text-white"
-                                : "bg-transparent text-[rgba(255,255,255,0.45)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[rgba(255,255,255,0.75)]"
-                            }`}
-                    >
-                        {item.icon}
-                        {item.label}
-                    </button>
+                    item.href ? (
+                        <Link
+                            key={item.id}
+                            href={item.href}
+                            className={`relative flex items-center gap-1.75 px-3.5 py-2 rounded-[10px] border-none cursor-pointer font-[Sora,sans-serif] text-[13px] font-semibold transition-all duration-200
+                  ${isActive(item.id)
+                                    ? "bg-[rgba(108,92,231,0.25)] text-white"
+                                    : "bg-transparent text-[rgba(255,255,255,0.45)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[rgba(255,255,255,0.75)]"
+                                }`}
+                        >
+                            {item.icon}
+                            {item.label}
+                        </Link>
+                    ) : (
+                        <button
+                            key={item.id}
+                            className={`relative flex items-center gap-1.75 px-3.5 py-2 rounded-[10px] border-none cursor-pointer font-[Sora,sans-serif] text-[13px] font-semibold transition-all duration-200
+                  ${isActive(item.id)
+                                    ? "bg-[rgba(108,92,231,0.25)] text-white"
+                                    : "bg-transparent text-[rgba(255,255,255,0.45)] hover:bg-[rgba(255,255,255,0.07)] hover:text-[rgba(255,255,255,0.75)]"
+                                }`}
+                        >
+                            {item.icon}
+                            {item.label}
+                        </button>
+                    )
                 ))}
             </div>
 
@@ -76,7 +99,7 @@ export default function Navbar() {
                 </button>
 
                 <div
-                    className="w-[34px] h-[34px] rounded-full flex items-center justify-center text-[12px] font-bold text-white cursor-pointer flex-shrink-0"
+                    className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[12px] font-bold text-white cursor-pointer shrink-0"
                     style={{ background: "linear-gradient(135deg,#fd79a8,#6C5CE7)" }}
                 >
                     JD
