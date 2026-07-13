@@ -7,6 +7,7 @@ const API_ENDPOINTS = {
   product: "/api/content/generate/product_description",
   youtube: "/api/content/generate/youtube_content",
   tiktok: "/api/content/generate/tiktok_content",
+  analyzeSEO: "/api/analyze/seo",
 };
 
 // Type definitions for requests
@@ -144,77 +145,22 @@ export const generateContent = async (
   }
 };
 
-/**
- * Alternative version using if-else conditions
- * Uncomment to use instead of switch statement
- */
-export const generateContentIfElse = async (
-  postType: string,
-  topic: string,
-  platforms: string[],
-  length: "short" | "medium" | "long",
-  tone: string,
-  keywords?: string[],
-  productData?: any
-) => {
+
+export async function analyzeSEO(
+  postType: "blog" | "social" | "product" | "youtube" | "tiktok",
+  content: string,
+  platform?: string
+) {
   try {
-    let apiEndpoint: string;
-    let requestPayload: any;
-
-    // If-else conditions to determine endpoint and payload
-    if (postType === "blog") {
-      apiEndpoint = API_ENDPOINTS.blog;
-      requestPayload = {
-        user_id: 1,
-        topic: topic,
-        keywords: keywords || [topic],
-        tone: tone,
-        length: length === "short" ? 500 : length === "medium" ? 1000 : 1500,
-      } as BlogArticleRequest;
-    } else if (postType === "social") {
-      apiEndpoint = API_ENDPOINTS.social;
-      requestPayload = {
-        topic: topic,
-        platform: platforms[0] || "twitter",
-        platforms: platforms,
-        tone: tone,
-        length: length === "short" ? 100 : length === "medium" ? 280 : 500,
-      } as SocialMediaPostRequest;
-    } else if (postType === "product") {
-      apiEndpoint = API_ENDPOINTS.product;
-      requestPayload = {
-        product_name: productData?.name || topic,
-        features: productData?.features || [topic],
-        benefits: productData?.benefits || topic,
-        target_audience: productData?.audience || "general",
-        length: length === "short" ? "short" : length === "medium" ? "medium" : "long",
-      } as ProductDescriptionRequest;
-    } else if (postType === "youtube") {
-      apiEndpoint = API_ENDPOINTS.youtube;
-      requestPayload = {
-        topic: topic,
-        keywords: keywords || [topic],
-        tone: tone,
-        length: length,
-      } as YoutubeContentRequest;
-    } else if (postType === "tiktok") {
-      apiEndpoint = API_ENDPOINTS.tiktok;
-      requestPayload = {
-        topic: topic,
-        keywords: keywords || [topic],
-        tone: tone,
-        length: length,
-      } as TiktokContentRequest;
-    } else {
-      throw new Error(`Unsupported content type: ${postType}`);
-    }
-
-    console.log(`📤 Sending ${postType} request to ${apiEndpoint}`, requestPayload);
-    const response = await apiClient.post(apiEndpoint, requestPayload);
-    console.log(`✅ Content generated successfully:`, response);
-    return response.data;
+    const requestPayload = {
+      postType,
+      content,
+      platform,
+    };
+    const response = await apiClient.post(API_ENDPOINTS.analyzeSEO, requestPayload);
+    return response;
   } catch (error) {
-    console.error(`❌ Error generating ${postType} content:`, error);
+    console.error("❌ Error analyzing SEO:", error);
     throw error;
   }
-};
+}

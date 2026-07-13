@@ -136,6 +136,8 @@ async def generate_youtube_content(request: YoutubeContentRequest):
 # ========== TIKTOK CONTENT ENDPOINT ==========
 @router.post("/generate/tiktok_content", response_model=ContentResponse)
 async def generate_tiktok_content(request: TiktokContentRequest):
+
+
     """
     Generate TikTok content: hooks, captions, hashtags, and ideas.
     - topic: main topic for the video
@@ -157,5 +159,20 @@ async def generate_tiktok_content(request: TiktokContentRequest):
             seo_report=result["seo_report"],
         )
         return content_response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.post("/seo")
+async def analyze_seo(request: dict):
+    """
+    Analyze SEO for a given content.
+    - content: the text content to analyze
+    """
+    try:
+        result = content_service.analyze_seo(request)
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

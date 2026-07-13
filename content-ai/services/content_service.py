@@ -477,3 +477,34 @@ class ContentService:
                 print(f"🎯 Content meets target SEO score: {seo_report.score}/{self.target_score}")
 
         return result
+    
+    def analyze_seo(self, request: dict) -> dict:
+        """
+        Analyze SEO for a given content.
+        - content: the text content to analyze
+        """
+        try:
+            post_type = request.get("postType")
+            content = request.get("content")
+            keywords = request.get("keywords", [])
+            platform = request.get("platform")
+
+            if post_type == "blog":
+                result = self.seo_optimizer.analyze_content(content, keywords)
+            elif post_type == "social":
+                if platform == "twitter":
+                    result = self.seo_optimizer.analyze_twitter_post(content, keywords)
+                elif platform == "instagram":
+                    result = self.seo_optimizer.analyze_instagram_post(content, keywords)
+                elif platform == "facebook":
+                    result = self.seo_optimizer.analyze_facebook_post(content, keywords)
+                else:
+                    raise ValueError(f"❌ Unsupported social platform: {platform}")
+            else:
+                raise ValueError(f"❌ Unsupported post type for SEO analysis: {post_type}")
+            
+            seo_report = self.parse_analysis(result) if post_type == "blog" else self.parse_social_analysis(result, platform)
+            return seo_report
+        except Exception as e:
+            print(f"❌ Error analyzing SEO: {e}")
+            raise e

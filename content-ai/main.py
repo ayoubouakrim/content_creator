@@ -21,6 +21,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(content.router, prefix="/api/content", tags=["Content Generation"])
+app.include_router(content.router, prefix="/api/analyze", tags=["SEO Analysis"])
 
 # Test endpoint
 @app.get("/")
