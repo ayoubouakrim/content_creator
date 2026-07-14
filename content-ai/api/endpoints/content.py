@@ -176,3 +176,11 @@ async def analyze_seo(request: dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/hashtags")
+async def getRelatedHashtags(request: dict):
+    try:
+        result = content_service.get_related_hashtags(request)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

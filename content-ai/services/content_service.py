@@ -14,10 +14,12 @@ from agents.blog_agent import BlogAgent
 from agents.social_media_agent import SocialMediaAgent
 from agents.product_agent import ProductAgent
 from agents.seo_optimizer import SEOOptimizer
+from agents.hashtags_analyzer_agent import HashtagsAnalyzerAgent
 
 class ContentService:
     def __init__(self):
         self.seo_optimizer = SEOOptimizer()
+        self.hashtags_analyzer = HashtagsAnalyzerAgent()
         self.target_score = 90
     
     def generate_content(self, request: Union[BlogArticleRequest, SocialMediaPostRequest, ProductDescriptionRequest]) -> dict:
@@ -507,4 +509,13 @@ class ContentService:
             return seo_report
         except Exception as e:
             print(f"❌ Error analyzing SEO: {e}")
+            raise e
+        
+    def get_related_hashtags(self, request: dict) -> dict:
+        try:
+            content = request.get("content")
+            hashtags = self.hashtags_analyzer.analyze(content)
+            return {"hashtags": hashtags}
+        except Exception as e:
+            print(f"❌ Error generating related hashtags: {e}")
             raise e

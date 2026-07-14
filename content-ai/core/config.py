@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
 
     GITHUB_TOKEN : str = os.getenv("GITHUB_TOKEN")
+    TAVILY_API_KEY : str = os.getenv("TAVILY_API_KEY")
 
     class Config:
         env_file = ".env"
