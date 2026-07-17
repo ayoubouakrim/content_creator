@@ -21,6 +21,65 @@ class ContentService:
         self.seo_optimizer = SEOOptimizer()
         self.hashtags_analyzer = HashtagsAnalyzerAgent()
         self.target_score = 90
+
+    def get_related_hashtags(self, request: dict) -> dict:
+        """
+        Generate hashtag suggestions for a piece of content.
+
+        Expected request shape:
+        {
+            "content": str,
+            "platform": str | None
+        }
+        """
+        content = (request.get("content") or "").strip()
+        platform = (request.get("platform") or "instagram").strip().lower()
+
+        if not content:
+            raise ValueError("Content is required to generate hashtags.")
+
+        analysis = self.hashtags_analyzer.analyze(content)
+
+        def to_tier(popularity: str) -> str:
+            normalized = (popularity or "").strip().lower()
+            if normalized in {"high", "broad"}:
+                return "broad"
+            if normalized in {"medium", "moderate"}:
+                return "moderate"
+            return "niche"
+
+        hashtags = []
+        for item in analysis.hashtags:
+            hashtags.append({
+                "tag": item.tag,
+                "tier": to_tier(item.popularity),
+                "reason": item.reason,
+            })
+
+        recommended_count_map = {
+            "instagram": 12,
+            "twitter": 3,
+            "x": 3,
+            "linkedin": 5,
+            "tiktok": 6,
+            "pinterest": 8,
+            "youtube": 5,
+        }
+
+        recommended_count = recommended_count_map.get(platform, 5)
+        notes = (
+            f"Suggested for {platform.title()} based on the content topic and current relevance signals."
+            if platform
+            else "Suggested based on the content topic and current relevance signals."
+        )
+
+        return {
+            "content_summary": analysis.summary,
+            "platform": platform,
+            "hashtags": hashtags,
+            "recommended_count": recommended_count,
+            "notes": notes,
+        }
     
     def generate_content(self, request: Union[BlogArticleRequest, SocialMediaPostRequest, ProductDescriptionRequest]) -> dict:
         """
@@ -509,13 +568,4 @@ class ContentService:
             return seo_report
         except Exception as e:
             print(f"❌ Error analyzing SEO: {e}")
-            raise e
-        
-    def get_related_hashtags(self, request: dict) -> dict:
-        try:
-            content = request.get("content")
-            hashtags = self.hashtags_analyzer.analyze(content)
-            return {"hashtags": hashtags}
-        except Exception as e:
-            print(f"❌ Error generating related hashtags: {e}")
             raise e

@@ -164,3 +164,14 @@ export async function analyzeSEO(
     throw error;
   }
 }
+
+export async function getHashtags(content: string, platform: string) {
+  try {
+    const requestPayload = { content, platform };
+    const response = await apiClient.post("/api/content/hashtags", requestPayload);
+    return response;
+  } catch (error) {
+    console.error("❌ Error generating related hashtags:", error);
+    throw error;
+  }
+}
