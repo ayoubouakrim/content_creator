@@ -149,7 +149,7 @@ export default function HashtagsPage() {
 
       <Navbar />
 
-      <div className="relative z-[5] max-w-[880px] mx-auto px-6 py-10 pb-24">
+      <div className="relative z-[5] max-w-[1200px] mx-auto px-6 py-10 pb-24">
         <div className="text-center mb-10 fade-up">
           <h1 className="text-[clamp(26px,5vw,42px)] font-extrabold tracking-tight leading-tight m-0">
             <span
@@ -168,9 +168,14 @@ export default function HashtagsPage() {
           </p>
         </div>
 
+        {/* ── TWO-COLUMN LAYOUT: input | report ── */}
+        <div
+          className="grid gap-6 items-start transition-[grid-template-columns] duration-300"
+          style={{ gridTemplateColumns: report || loading ? "minmax(0,440px) minmax(0,1fr)" : "minmax(0,640px)", justifyContent: "center" }}
+        >
         {/* ── INPUT PANEL ── */}
         <div
-          className="rounded-3xl overflow-hidden backdrop-blur-2xl p-7 mb-6"
+          className="rounded-3xl overflow-hidden backdrop-blur-2xl p-7"
           style={{
             background: "rgba(6,4,18,.9)",
             border: "1px solid rgba(108,92,231,.25)",
@@ -254,7 +259,7 @@ export default function HashtagsPage() {
           </button>
         </div>
 
-        {/* ── LOADING SKELETON ── */}
+        {/* ── LOADING SKELETON / REPORT COLUMN ── */}
         {loading && (
           <div
             className="rounded-3xl p-7 backdrop-blur-2xl flex flex-wrap gap-2"
@@ -365,6 +370,7 @@ export default function HashtagsPage() {
             </div>
           </div>
         )}
+        </div>
 
         {/* empty state hint */}
         {!loading && !report && (
