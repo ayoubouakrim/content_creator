@@ -4,6 +4,7 @@ from schemas.content import (
     BlogArticleRequest, 
     SocialMediaPostRequest, 
     ProductDescriptionRequest,
+    ContentImprovementRequest,
     SEOReport,
     KeywordAnalysis,
     OnPageElement,
@@ -11,6 +12,7 @@ from schemas.content import (
     SEORecommendation
 )
 from agents.blog_agent import BlogAgent
+from agents.content_improver_agent import ContentImproverAgent
 from agents.social_media_agent import SocialMediaAgent
 from agents.product_agent import ProductAgent
 from agents.seo_optimizer import SEOOptimizer
@@ -20,7 +22,40 @@ class ContentService:
     def __init__(self):
         self.seo_optimizer = SEOOptimizer()
         self.hashtags_analyzer = HashtagsAnalyzerAgent()
+        self.content_improver = ContentImproverAgent()
         self.target_score = 90
+
+    def improve_content(self, request: ContentImprovementRequest) -> dict:
+        """
+        Rewrite existing content with SEO and readability improvements.
+        """
+        content = (request.content or "").strip()
+        if not content:
+            raise ValueError("Content is required to improve it.")
+
+        improved_content = self.content_improver.improve_content(
+            content=content,
+            content_type=(request.content_type or "blog").strip(),
+            platform=(request.platform or None),
+            target_keyword=(request.target_keyword or None),
+        )
+
+        notes = [
+            "Meaning preserved while improving clarity and structure.",
+        ]
+        if request.target_keyword:
+            notes.append(f"Optimized naturally for target keyword: {request.target_keyword}.")
+        if request.platform:
+            notes.append(f"Adapted for {request.platform}.")
+
+        return {
+            "improved_content": improved_content,
+            "original_content": content,
+            "content_type": request.content_type or "blog",
+            "platform": request.platform,
+            "target_keyword": request.target_keyword,
+            "notes": notes,
+        }
 
     def get_related_hashtags(self, request: dict) -> dict:
         """

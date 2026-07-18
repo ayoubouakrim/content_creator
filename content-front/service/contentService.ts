@@ -8,6 +8,7 @@ const API_ENDPOINTS = {
   youtube: "/api/content/generate/youtube_content",
   tiktok: "/api/content/generate/tiktok_content",
   analyzeSEO: "/api/analyze/seo",
+  improveSEO: "/api/content/improve_seo",
 };
 
 // Type definitions for requests
@@ -47,6 +48,22 @@ interface TiktokContentRequest {
   keywords: string[];
   tone: string;
   length: string;
+}
+
+interface ImproveContentRequest {
+  content: string;
+  content_type?: string;
+  platform?: string;
+  target_keyword?: string;
+}
+
+interface ImproveContentResponse {
+  improved_content: string;
+  original_content: string;
+  content_type?: string;
+  platform?: string;
+  target_keyword?: string;
+  notes?: string[];
 }
 
 /**
@@ -172,6 +189,27 @@ export async function getHashtags(content: string, platform: string) {
     return response;
   } catch (error) {
     console.error("❌ Error generating related hashtags:", error);
+    throw error;
+  }
+}
+
+export async function improveContent(
+  contentType: string,
+  content: string,
+  platform?: string,
+  targetKeyword?: string
+): Promise<ImproveContentResponse> {
+  try {
+    const requestPayload: ImproveContentRequest = {
+      content,
+      content_type: contentType,
+      platform,
+      target_keyword: targetKeyword,
+    };
+    const response = await apiClient.post<ImproveContentResponse>(API_ENDPOINTS.improveSEO, requestPayload);
+    return response;
+  } catch (error) {
+    console.error("❌ Error improving content:", error);
     throw error;
   }
 }

@@ -63,6 +63,22 @@ class TiktokContentRequest(BaseModel):
     length: str = Field(default="short", description="Content length: short, medium, or long")
 
 
+class ContentImprovementRequest(BaseModel):
+    content: str = Field(..., description="The content to improve")
+    content_type: Optional[str] = Field(default="blog", description="The type of content being improved")
+    platform: Optional[str] = Field(default=None, description="Optional platform for social content")
+    target_keyword: Optional[str] = Field(default=None, description="Optional target keyword to optimize for")
+
+
+class ContentImprovementResponse(BaseModel):
+    improved_content: str
+    original_content: str
+    content_type: Optional[str] = None
+    platform: Optional[str] = None
+    target_keyword: Optional[str] = None
+    notes: Optional[List[str]] = None
+
+
 class KeywordAnalysis(BaseModel):
     """Individual keyword analysis with volume and density data."""
     term: str

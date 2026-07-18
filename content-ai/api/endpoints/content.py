@@ -6,14 +6,29 @@ from schemas.content import (
     ProductDescriptionRequest,
     YoutubeContentRequest,
     TiktokContentRequest,
+    ContentImprovementRequest,
+    ContentImprovementResponse,
     ContentResponse,
 )
-from http.client import HTTPException
+from fastapi import HTTPException
 from typing import List
 
 
 router = APIRouter()
 content_service = ContentService()
+
+
+# ========== CONTENT IMPROVEMENT ENDPOINT ==========
+@router.post("/improve_seo", response_model=ContentImprovementResponse)
+async def improve_seo(request: ContentImprovementRequest):
+    """
+    Rewrite existing content to improve clarity, SEO, and platform fit.
+    """
+    try:
+        result = content_service.improve_content(request)
+        return ContentImprovementResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ========== BLOG ARTICLE ENDPOINT ==========
