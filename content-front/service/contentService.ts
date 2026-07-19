@@ -213,3 +213,128 @@ export async function improveContent(
     throw error;
   }
 }
+
+// ========== SAVE HELPERS ==========
+
+export async function saveContent(
+  title: string,
+  body: string,
+  content_type: string,                 // blog | social | product | youtube | tiktok
+  platform?: string | null,
+  meta_description?: string | null,
+  seo_report?: Record<string, any> | null,
+) {
+  try {
+    const user_id = localStorage.getItem("user_id");
+    const payload = { title, body, content_type, platform, meta_description, seo_report, user_id };
+    const response = await apiClient.post("/api/content/save", payload);
+    return response;
+  } catch (error) {
+    console.error("❌ Error saving content:", error);
+    throw error;
+  }
+}
+
+export async function saveSEOReport(
+  score: number,
+  scoreLabel: string,
+  rawContent?: string,
+  postTitle?: string,
+  niche?: string,
+  format?: string,
+  wordCount?: number,
+  wordCountTarget?: string,
+  wordCountStatus?: string,
+  readabilityScore?: number,
+  readabilityLevel?: string,
+  readabilityMetrics?: any,
+  keywordDensity?: number,
+  primaryKeyword?: any,
+  secondaryKeywords?: any,
+  missingKeywords?: any,
+  onPageElements?: any,
+  titleSuggestion?: string,
+  metaDescriptionSuggestion?: string,
+  positivePoints?: any,
+  negativePoints?: any,
+  recommendations?: any
+): Promise<{ id: number; status: string }> {
+  try {
+    const response = await apiClient.post("/api/content/save/seo-report", {
+      score,
+      score_label: scoreLabel,
+      raw_content: rawContent,
+      post_title: postTitle,
+      niche,
+      format,
+      word_count: wordCount,
+      word_count_target: wordCountTarget,
+      word_count_status: wordCountStatus,
+      readability_score: readabilityScore,
+      readability_level: readabilityLevel,
+      readability_metrics: readabilityMetrics,
+      keyword_density: keywordDensity,
+      primary_keyword: primaryKeyword,
+      secondary_keywords: secondaryKeywords,
+      missing_keywords: missingKeywords,
+      on_page_elements: onPageElements,
+      title_suggestion: titleSuggestion,
+      meta_description_suggestion: metaDescriptionSuggestion,
+      positive_points: positivePoints,
+      negative_points: negativePoints,
+      recommendations,
+    });
+    return response;
+  } catch (error) {
+    console.error("❌ Error saving SEO report:", error);
+    throw error;
+  }
+}
+
+export async function saveHashtagAnalysis(
+  rawContent: string,
+  platform: string,
+  hashtags: any,
+  contentSummary?: string,
+  recommendedCount?: number,
+  notes?: string
+): Promise<{ id: number; status: string }> {
+  try {
+    const response = await apiClient.post("/api/content/save/hashtags", {
+      raw_content: rawContent,
+      platform,
+      hashtags,
+      content_summary: contentSummary,
+      recommended_count: recommendedCount,
+      notes,
+    });
+    return response;
+  } catch (error) {
+    console.error("❌ Error saving hashtags:", error);
+    throw error;
+  }
+}
+
+export async function saveContentImprovement(
+  originalContent: string,
+  improvedContent: string,
+  contentType?: string,
+  platform?: string,
+  targetKeyword?: string,
+  notes?: string[]
+): Promise<{ id: number; status: string }> {
+  try {
+    const response = await apiClient.post("/api/content/save/improvement", {
+      original_content: originalContent,
+      improved_content: improvedContent,
+      content_type: contentType,
+      platform,
+      target_keyword: targetKeyword,
+      notes,
+    });
+    return response;
+  } catch (error) {
+    console.error("❌ Error saving improvement:", error);
+    throw error;
+  }
+}

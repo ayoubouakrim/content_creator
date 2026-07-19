@@ -104,6 +104,7 @@ function CopyBtn({ text }: { text: string }) {
   );
 }
 
+
 /* ══ STEP LABEL ════════════════════════════════════════════════ */
 function StepLabel({ num, label, c1, c2 }: { num: number | string; label: string; c1: string; c2: string }) {
   return (
@@ -204,6 +205,7 @@ export default function ContentStudio() {
     }
     finally { setLoading(false); }
   };
+
 
   const stepNum = (n: number) => postType === "social" ? n : n - 1;
 

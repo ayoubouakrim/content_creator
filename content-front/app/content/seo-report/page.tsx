@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import SEOReportCard from "@/components/content/SEOReport";
-import { analyzeSEO } from "@/service/contentService";
+import SaveBtn from "@/components/content/SaveBtn";
+import { analyzeSEO, saveSEOReport } from "@/service/contentService";
 import {
   PenLine,
   Radio,
@@ -77,6 +78,23 @@ export default function SEOAnalyzerPage() {
     } catch (err) {
       console.error("❌ Analysis error:", err);
       setError("Analysis failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveReport = async () => {
+    if (!report) {
+      setError("No report to save.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      await saveSEOReport(report);
+    } catch (err) {
+      console.error("❌ Save error:", err);
+      setError("Save failed. Try again.");
     } finally {
       setLoading(false);
     }

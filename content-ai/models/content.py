@@ -9,6 +9,8 @@ class ContentType(str, enum.Enum):
     BLOG_ARTICLE = "blog_article"
     SOCIAL_MEDIA_POST = "social_media_post"
     PRODUCT_DESCRIPTION = "product_description"
+    YOUTUBE_CONTENT = "youtube_content"
+    TIKTOK_CONTENT = "tiktok_content"
 
 class ContentStatus(str, enum.Enum):
     DRAFT = "draft"
@@ -32,6 +34,9 @@ class Content(Base):
 
     # Relationships
     author = relationship("User", back_populates="contents")
+    seo_reports = relationship("SEOReport", back_populates="content")
+    hashtag_analyses = relationship("HashtagAnalysis", back_populates="content")
+    improvements = relationship("ImprovedContent", back_populates="content")
     
     
 

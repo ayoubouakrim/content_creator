@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { saveContent } from "@/service/contentService";
 import {
   Copy,
   Check,
@@ -15,6 +16,9 @@ import {
   Radio,
   ShoppingBag,
   Music2,
+  Save,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 /* ══ PARSERS (unchanged logic) ══ */
@@ -134,6 +138,76 @@ function CopyBtn({ text }: { text?: string }) {
   );
 }
 
+/* ══ SAVE BTN — idle / saving / saved / error, calls the backend via saveContent() ══ */
+function SaveBtn({
+  body,
+  title,
+  contentType,
+  platform,
+  seoReport,
+}: {
+  body: string;
+  title?: string;
+  contentType: string;
+  platform?: string | null;
+  seoReport?: any;
+}) {
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const handleSave = async () => {
+    if (state === "saving") return;
+    setState("saving");
+    try {
+      await saveContent(
+        title,
+        body,
+        contentType,
+        platform ?? null,
+        seoReport?.meta_description_suggestion ?? null,
+        seoReport ?? null,
+      );
+      setState("saved");
+      setTimeout(() => setState("idle"), 2000);
+    } catch (err) {
+      console.error("❌ Save failed:", err);
+      setState("error");
+      setTimeout(() => setState("idle"), 2500);
+    }
+  };
+
+  const styles = {
+    idle: "bg-white/5 border-white/10 text-white/40 hover:text-white/70 hover:bg-white/10",
+    saving: "bg-violet-500/10 border-violet-400/30 text-violet-300",
+    saved: "bg-teal-500/15 border-teal-400/40 text-teal-300",
+    error: "bg-red-500/10 border-red-400/40 text-red-300",
+  }[state];
+
+  const icon = {
+    idle: <Save size={12} strokeWidth={1.75} />,
+    saving: <Loader2 size={12} strokeWidth={2} className="animate-spin" />,
+    saved: <Check size={12} strokeWidth={2.5} />,
+    error: <AlertCircle size={12} strokeWidth={2} />,
+  }[state];
+
+  const label = {
+    idle: "Save",
+    saving: "Saving…",
+    saved: "Saved",
+    error: "Retry",
+  }[state];
+
+  return (
+    <button
+      onClick={handleSave}
+      disabled={state === "saving"}
+      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium tracking-wide border cursor-pointer transition-all duration-200 flex items-center gap-1.5 disabled:cursor-not-allowed ${styles}`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
 /* ══ MAIN ══ */
 export default function ContentDisplay({
   content,
@@ -163,6 +237,8 @@ export default function ContentDisplay({
   const tk = postType === "tiktok" ? parseTiktok(text) : null;
   const pr = postType === "product" ? parseProduct(text) : null;
 
+  const saveTitle = blog?.title ?? pr?.headline ?? undefined;
+
   return (
     <div
       className="rounded-3xl overflow-hidden backdrop-blur-2xl"
@@ -174,7 +250,7 @@ export default function ContentDisplay({
     >
       {/* chrome bar — same language as the generation terminal */}
       <div
-        className="flex items-center justify-between px-5 py-3.5 border-b"
+        className="flex items-center justify-between px-5 py-3.5 border-b flex-wrap gap-2"
         style={{ borderColor: "rgba(108,92,231,.2)", background: "rgba(108,92,231,.06)" }}
       >
         <div className="flex items-center gap-2.5">
@@ -202,6 +278,13 @@ export default function ContentDisplay({
               {reportOpen ? "Hide report" : "SEO report"}
             </button>
           )}
+          <SaveBtn
+            body={text}
+            title={saveTitle}
+            contentType={postType}
+            platform={activePost?.platform ?? null}
+            seoReport={activePost?.seo_report ?? null}
+          />
           <CopyBtn text={text} />
         </div>
       </div>

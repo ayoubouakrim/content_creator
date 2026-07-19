@@ -12,11 +12,16 @@ function useAuthAction<T>(action: (data: T) => Promise<{ access_token: string }>
         setLoading(true);
         setError(null);
         try {
-            const { access_token } = await action(payload);
+            const { access_token, user } = await action(payload);
+
+            
             
             // Save token in both localStorage and cookies
             if (typeof window !== "undefined") {
                 localStorage.setItem("auth_token", access_token);
+
+                localStorage.setItem("user_id", String(user.id));
+                localStorage.setItem("user", JSON.stringify(user));
                 document.cookie = `auth_token=${access_token}; path=/; max-age=86400`;
             }
             router.push(redirectTo);
