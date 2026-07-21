@@ -13,20 +13,22 @@ class BaseAgent(ABC):
     
     def _initialize_llm(self):
         return ChatOpenAI (
-            base_url="https://models.inference.ai.azure.com",
+            base_url="https://models.github.ai/inference",
             api_key=settings.GITHUB_TOKEN,
             model="gpt-4o",
             temperature=0.7,
         )
     
     def generate(self, prompt: str) -> str:
-        
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=prompt)
-        ]
-
-        
+     messages = [
+        SystemMessage(content=self.system_prompt),
+        HumanMessage(content=prompt)
+     ]
+     try:
         response = self.llm.invoke(messages)
-        
         return response.content
+     except Exception as e:
+        import traceback
+        print("‼️ LLM invoke failed:")
+        traceback.print_exc()
+        raise

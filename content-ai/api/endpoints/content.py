@@ -26,14 +26,6 @@ content_service = ContentService()
 
 # ========== SAVE ENDPOINTS (auth required) ==========
 
-class SaveContentRequest(BaseModel):
-    title: str
-    body: str
-    content_type: str
-    platform: Optional[str] = None
-    meta_description: Optional[str] = None
-
-
 class SaveSEOReportRequest(BaseModel):
     score: int
     score_label: str = "Needs SEO work"
@@ -59,6 +51,17 @@ class SaveSEOReportRequest(BaseModel):
     recommendations: Optional[Any] = None
 
 
+class SaveContentRequest(BaseModel):
+    user_id: int
+    title: Optional[str] = None   # make optional since your handler has a fallback
+    body: str
+    content_type: str
+    platform: Optional[str] = None
+    meta_description: Optional[str] = None
+    seo_report: Optional[SaveSEOReportRequest] = None
+
+
+
 class SaveHashtagsRequest(BaseModel):
     raw_content: str
     platform: str = "instagram"
@@ -79,23 +82,23 @@ class SaveImprovementRequest(BaseModel):
 
 @router.post("/save")
 def save_content(
-    request: SaveContentRequest,
+    request: SaveContentRequest, db: Session = Depends(getdb)
 ):
     """Save generated content to the database."""
 
-    db: Session = Depends(getdb)
     try:
+        print("starting to save content...")
         record = content_crud.create_content(
             db=db,
             user_id=request.user_id,
             title = request.title or (request.body[:80] + "…" if len(request.body) > 80 else request.body),
             body=request.body,
-            word_count=len(request.body.split()),
             content_type=request.content_type,
             platform=request.platform,
             meta_description=request.meta_description,
         )
- 
+
+        print("now the seo report is being saved...")
         # ══ ADDED: persist the SEO report if one was passed in ══
         if request.seo_report:
             sr = request.seo_report

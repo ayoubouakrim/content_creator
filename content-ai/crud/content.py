@@ -7,6 +7,8 @@ from typing import Optional, Any
 
 # ========== CONTENT ==========
 
+import traceback
+
 def create_content(
     db: Session,
     user_id: int,
@@ -16,7 +18,7 @@ def create_content(
     platform: Optional[str] = None,
     meta_description: Optional[str] = None,
 ) -> Content:
-    """Save a generated content record."""
+
     ct_map = {
         "blog": ContentType.BLOG_ARTICLE,
         "social": ContentType.SOCIAL_MEDIA_POST,
@@ -26,20 +28,28 @@ def create_content(
     }
     mapped = ct_map.get(content_type, ContentType.BLOG_ARTICLE)
 
-    record = Content(
-        user_id=user_id,
-        title=title,
-        body=body,
-        meta_description=meta_description,
-        word_count=len(body.split()),
-        platform=platform,
-        status=ContentStatus.DRAFT,
-        content_type=mapped,
-    )
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-    return record
+    print(f"Mapped content_type '{content_type}' to ContentType '{mapped}'")
+
+    try:
+        print("About to create Content object...", flush=True)
+        record = Content(          # ← keyword args, not positional
+            user_id=user_id,
+            title=title,
+            body=body,
+            content_type=mapped,
+            platform=platform,
+            meta_description=meta_description,
+        )
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        print("Content saved successfully", flush=True)
+        return record
+    except Exception as e:
+        db.rollback()
+        print("‼️ create_content failed:", flush=True)
+        traceback.print_exc()
+        raise
 
 
 # ========== SEO REPORT ==========

@@ -8,6 +8,10 @@ class SocialMediaAgent(BaseAgent):
         super().__init__(system_prompt)
 
     def create_content(self, request: SocialMediaPostRequest) -> str:
+        print(f"Creating social media post for topic: {request.topic} on platform: {request.platform}")
+
         prompt = f"Write a social media post about '{request.topic}' for the platform {request.platform}. The post should be engaging and appropriate for the target audience."
         response = self.generate(prompt)
+
+        print("Generated social media post: ended")
         return response
