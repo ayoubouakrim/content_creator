@@ -338,3 +338,15 @@ export async function saveContentImprovement(
     throw error;
   }
 }
+
+// ============= GET HELPERS =============
+
+export async function getAllContentByUser(user_id: number) {
+  try {
+    const response = await apiClient.get(`/api/content/user/${user_id}`);
+    return response;
+  } catch (error) {
+    console.error("❌ Error fetching content for user:", error);
+    throw error;
+  }
+}

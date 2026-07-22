@@ -166,3 +166,8 @@ def create_content_improvement(
     db.commit()
     db.refresh(record)
     return record
+
+
+def get_all_content_by_user(db: Session, user_id: int):
+    """Retrieve all content records for a specific user."""
+    return db.query(Content).filter(Content.user_id == user_id).all()

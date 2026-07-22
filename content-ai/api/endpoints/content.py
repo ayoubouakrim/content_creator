@@ -365,3 +365,15 @@ async def getRelatedHashtags(request: dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.get("/user/{user_id}")
+async def get_all_content_by_user(user_id: int, db: Session = Depends(getdb)):
+    """
+    Retrieve all content records for a specific user.
+    """
+    try:
+        records = content_crud.get_all_content_by_user(db, user_id)
+        return records
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

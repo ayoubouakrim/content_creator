@@ -1,10 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Share2, BarChart3, Hash, Zap } from 'lucide-react';
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { getAllContentByUser } from "@/service/contentService";
+
+
+const PLATFORM_MAP: Record<string, { label: string; color: string }> = {
+    instagram: { label: "IG", color: "#fd79a8" },
+    tiktok: { label: "TT", color: "#1e293b" },
+    twitter: { label: "X", color: "#1da1f2" },
+    linkedin: { label: "LI", color: "#0077b5" },
+    facebook: { label: "FB", color: "#1877f2" },
+    threads: { label: "TH", color: "#1e293b" },
+    pinterest: { label: "PT", color: "#e60023" },
+};
+
+const STATUS_MAP: Record<string, "scheduled" | "draft" | "live"> = {
+    draft: "draft",
+    scheduled: "scheduled",
+    published: "live",
+    live: "live",
+};
+
+function formatTime(createdAt: string): string {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const time = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+    if (isToday) return `Today · ${time}`;
+
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    if (date.toDateString() === tomorrow.toDateString()) return `Tomorrow · ${time}`;
+
+    return `${date.toLocaleDateString([], { month: "short", day: "numeric" })} · ${time}`;
+}
 
 /* ─── Mini chart component ───────────────────────────────────── */
 function SparkLine({ data, color }: { data: number[]; color: string }) {
@@ -36,7 +70,7 @@ function SparkLine({ data, color }: { data: number[]; color: string }) {
 function AIBar() {
     const [val, setVal] = useState("");
     const [loading, setLoading] = useState(false);
-    
+
 
     const handleGenerate = () => {
         if (!val.trim()) return;
@@ -53,7 +87,7 @@ function AIBar() {
                 <span className="text-[rgba(255,255,255,0.5)] text-[11px] uppercase tracking-[0.1em] font-semibold">
                     AI Content Generator
                 </span>
-                
+
             </div>
 
             {/* Textarea + button */}
@@ -179,6 +213,28 @@ function TrendRow({ tag, delta, volume }: { tag: string; delta: string; volume: 
 /* ─── Main Dashboard ─────────────────────────────────────────── */
 export default function DashboardPage() {
     const router = useRouter();
+
+    const [contentList, setContentList] = useState<any[]>([]);
+
+    const fetchContent = async () => {
+        try {
+            const userId = localStorage.getItem("user_id");
+            if (!userId) {
+                console.error("User ID not found in localStorage.");
+                return;
+            }
+            const content = await getAllContentByUser(parseInt(userId));
+            console.log("✅ Fetched content:", content);
+            setContentList(content);
+        } catch (error) {
+            console.error("❌ Error fetching content:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchContent();
+    }, []);
+
     return (
         <>
             <style>{`
@@ -332,11 +388,27 @@ export default function DashboardPage() {
                                 </button>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <ScheduledCard time="Today · 3:00 PM" platform="IG" caption="New fall collection drop — link in bio! ✨ #fashion" status="scheduled" color="#fd79a8" />
-                                <ScheduledCard time="Today · 6:00 PM" platform="TT" caption="POV: You found the perfect outfit for under $50" status="scheduled" color="#1e293b" />
-                                <ScheduledCard time="Tomorrow · 9:00 AM" platform="X" caption="Thread: 5 social media mistakes killing your reach 🧵" status="draft" color="#1da1f2" />
-                                <ScheduledCard time="Tomorrow · 12:00 PM" platform="LI" caption="How we grew our Instagram by 12K followers in 60 days" status="draft" color="#0077b5" />
-                                <ScheduledCard time="Live now" platform="IG" caption="Behind the scenes: Our studio setup for fall 🍂" status="live" color="#fd79a8" />
+                                {contentList.length === 0 && (
+                                    <p className="text-[13px] text-[#94a3b8]">No posts yet.</p>
+                                )}
+                                {contentList.map((item) => {
+                                    const platformInfo = PLATFORM_MAP[item.platform ?? ""] ?? {
+                                        label: (item.platform ?? "?").slice(0, 2).toUpperCase(),
+                                        color: "#94a3b8",
+                                    };
+                                    const status = STATUS_MAP[item.status] ?? "draft";
+
+                                    return (
+                                        <ScheduledCard
+                                            key={item.id}
+                                            time={formatTime(item.created_at)}
+                                            platform={platformInfo.label}
+                                            caption={item.title}
+                                            status={status}
+                                            color={platformInfo.color}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
 
