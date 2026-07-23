@@ -171,3 +171,12 @@ def create_content_improvement(
 def get_all_content_by_user(db: Session, user_id: int):
     """Retrieve all content records for a specific user."""
     return db.query(Content).filter(Content.user_id == user_id).all()
+
+
+def get_content_by_id(db: Session, content_id: int):
+    """Retrieve a specific content record by its ID."""
+    return db.query(Content).filter(Content.id == content_id).first()
+
+def get_seo_report_by_content_id(db: Session, content_id: int):
+    """Retrieve the SEO report associated with a specific content ID."""
+    return db.query(SEOReport).filter(SEOReport.content_id == content_id).first()

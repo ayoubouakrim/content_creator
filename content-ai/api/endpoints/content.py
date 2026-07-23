@@ -377,3 +377,26 @@ async def get_all_content_by_user(user_id: int, db: Session = Depends(getdb)):
         return records
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/content/{content_id}")
+async def get_content_by_id(content_id: int, db: Session = Depends(getdb)):
+    
+    try:
+        record = content_crud.get_content_by_id(db, content_id)
+        if not record:
+            raise HTTPException(status_code=404, detail="Content not found")
+        return record
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/seo-report/{content_id}")
+async def get_seo_report_by_content_id(content_id: int, db: Session = Depends(getdb)):
+    
+    try:
+        record = content_crud.get_seo_report_by_content_id(db, content_id)
+        if not record:
+            raise HTTPException(status_code=404, detail="SEO report not found")
+        return record
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

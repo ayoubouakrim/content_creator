@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FileText, Share2, BarChart3, Hash, Zap } from 'lucide-react';
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { getAllContentByUser } from "@/service/contentService";
+import { getAllContentByUser, getContentById, getSEOReportByContentId } from "@/service/contentService";
 
 
 const PLATFORM_MAP: Record<string, { label: string; color: string }> = {
@@ -163,8 +163,9 @@ function StatCard({ label, value, delta, positive, spark, color }: {
 }
 
 /* ─── Scheduled Post Card ────────────────────────────────────── */
-function ScheduledCard({ time, platform, caption, status, color }: {
+function ScheduledCard({ time, platform, caption, status, color, onClick }: {
     time: string; platform: string; caption: string; status: "scheduled" | "draft" | "live"; color: string;
+    onClick?: () => void;
 }) {
     const statusStyles = {
         scheduled: "bg-[rgba(108,92,231,0.1)] text-[#6C5CE7]",
@@ -174,6 +175,7 @@ function ScheduledCard({ time, platform, caption, status, color }: {
 
     return (
         <div
+            onClick={onClick}
             className="flex items-center gap-3.5 px-4 py-[14px] rounded-[14px] bg-white border border-[#f1f5f9] cursor-pointer transition-all duration-150
         hover:border-[#e2e8f0] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]"
         >
@@ -229,6 +231,10 @@ export default function DashboardPage() {
         } catch (error) {
             console.error("❌ Error fetching content:", error);
         }
+    };
+
+    const handleOpenContent = (contentId: number) => {
+        router.push(`/content/${contentId}`);
     };
 
     useEffect(() => {
@@ -298,41 +304,47 @@ export default function DashboardPage() {
                                             sub: "AI-written and seo optimized",
                                             color: "#6C5CE7",
                                             icon: FileText,
-                                            span: "col-span-1"
+                                            span: "col-span-1",
+                                            href: "/content/create?type=blog",
                                         },
                                         {
                                             label: "Social media post",
                                             sub: "AI-written",
                                             color: "#fd79a8",
                                             icon: Share2,
-                                            span: "col-span-1"
+                                            span: "col-span-1",
+                                            href: "/content/create?type=social",
                                         },
                                         {
                                             label: "Review seo score",
                                             sub: "Get a detailed analysis",
                                             color: "#1da1f2",
                                             icon: BarChart3,
-                                            span: "col-span-2 md:col-span-1"
+                                            span: "col-span-2 md:col-span-1",
+                                            href: "/content/seo-report",
                                         },
                                         {
                                             label: "Trending hashtags",
                                             sub: "Get 30 relevant tags to your post",
                                             color: "#fdcb6e",
                                             icon: Hash,
-                                            span: "col-span-1"
+                                            span: "col-span-1",
+                                            href: "/content/hashtags",
                                         },
                                         {
                                             label: "Improve your seo score",
                                             sub: "Get actionable tips",
                                             color: "#00b894",
                                             icon: Zap,
-                                            span: "col-span-1"
+                                            span: "col-span-1",
+                                            href: "/content/improve-seo",
                                         },
                                     ].map((a) => {
                                         const Icon = a.icon;
                                         return (
                                             <div
                                                 key={a.label}
+                                                onClick={() => router.push(a.href)}
                                                 className={`group ${a.span} p-4 rounded-[14px] bg-white border border-[#e2e8f0] cursor-pointer transition-all duration-200 hover:-translate-y-0.5 overflow-hidden relative`}
                                                 onMouseEnter={(e) => {
                                                     e.currentTarget.style.borderColor = a.color;
@@ -406,6 +418,7 @@ export default function DashboardPage() {
                                             caption={item.title}
                                             status={status}
                                             color={platformInfo.color}
+                                            onClick={() => handleOpenContent(item.id)}
                                         />
                                     );
                                 })}

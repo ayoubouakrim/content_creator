@@ -350,3 +350,23 @@ export async function getAllContentByUser(user_id: number) {
     throw error;
   }
 }
+
+export async function getContentById(content_id: number) {
+  try {
+    const response = await apiClient.get(`/api/content/content/${content_id}`);
+    return response;
+  } catch (error) {
+    console.error("❌ Error fetching content by ID:", error);
+    throw error;
+  }
+} 
+
+export async function getSEOReportByContentId(content_id: number) {
+  try {
+    const response = await apiClient.get(`/api/content/seo-report/${content_id}`);
+    return response;
+  } catch (error) {
+    console.error("❌ Error fetching SEO report by content ID:", error);
+    throw error;
+  }
+}
