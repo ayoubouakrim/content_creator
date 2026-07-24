@@ -217,6 +217,7 @@ export default function DashboardPage() {
     const router = useRouter();
 
     const [contentList, setContentList] = useState<any[]>([]);
+    const [username, setUsername] = useState<string>()
 
     const fetchContent = async () => {
         try {
@@ -233,12 +234,26 @@ export default function DashboardPage() {
         }
     };
 
+    const fetchUsername = async () => {
+        try {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+            if (user && user.firstname && user.lastname) {
+                setUsername(`${user.firstname} ${user.lastname}`);
+                console.log("✅ Fetched username:", `${user.firstname} ${user.lastname}`);
+            }
+        } catch (error) {
+            console.error("❌ Error fetching username:", error);
+        }
+    };
+
     const handleOpenContent = (contentId: number) => {
         router.push(`/content/${contentId}`);
     };
 
     useEffect(() => {
         fetchContent();
+        fetchUsername();
     }, []);
 
     return (
@@ -266,7 +281,7 @@ export default function DashboardPage() {
                     {/* Header */}
                     <div className="mb-7">
                         <h1 className="m-0 text-2xl font-bold text-[#1e293b] tracking-[-0.03em]">
-                            Good morning, Jordan 👋
+                            Good morning, {username}!
                         </h1>
                         <p className="m-0 mt-1 text-[13px] text-[#94a3b8]">
                             Your audience is most active in{" "}
@@ -276,10 +291,10 @@ export default function DashboardPage() {
 
                     {/* Stats row */}
                     <div className="flex gap-3.5 mb-7 animate-fade-up-slow">
-                        <StatCard label="Total reach" value="84.2K" delta="18% this week" positive spark={[40, 55, 48, 62, 58, 75, 84]} color="#6C5CE7" />
-                        <StatCard label="Engagement" value="6.4%" delta="0.8% this week" positive spark={[5, 5.2, 4.9, 5.8, 5.5, 6.1, 6.4]} color="#00b894" />
-                        <StatCard label="New followers" value="+1,247" delta="3% this week" positive={false} spark={[1400, 1320, 1380, 1290, 1310, 1260, 1247]} color="#fd79a8" />
-                        <StatCard label="Posts this week" value="9" delta="2 posts" positive spark={[4, 6, 5, 7, 6, 8, 9]} color="#fdcb6e" />
+                        <StatCard label="Total Posts" value="15" delta="50% this week" positive spark={[40, 55, 48, 62, 58, 75, 84]} color="#6C5CE7" />
+                        <StatCard label="Posts this week" value="9" delta="this week" positive spark={[4, 6, 5, 7, 6, 8, 9]} color="#fdcb6e" />
+                        <StatCard label="Total Reports" value="6.4%" delta="50% this week" positive spark={[5, 5.2, 4.9, 5.8, 5.5, 6.1, 6.4]} color="#00b894" />
+                        <StatCard label="Hashtags" value="30" delta="20% this week" positive={false} spark={[1400, 1320, 1380, 1290, 1310, 1260, 1247]} color="#fd79a8" />
                     </div>
 
                     {/* AI Bar */}

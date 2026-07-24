@@ -37,4 +37,4 @@ def login(credentials: UserLogin, db: Session = Depends(getdb)):
         data={"sub": user.email}, expires_delta=access_token_expires
     )
 
-    return {"access_token": access_token, "token_type": "bearer", "user": {"id": user.id, "email": user.email}}
+    return {"access_token": access_token, "token_type": "bearer", "user": {"id": user.id, "email": user.email, "firstname": user.first_name, "lastname": user.last_name}}
