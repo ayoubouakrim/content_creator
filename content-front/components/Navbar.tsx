@@ -47,17 +47,14 @@ export default function Navbar() {
             style={{ background: "linear-gradient(135deg,#1a1040 0%,#2d1b69 100%)" }}
         >
             {/* Logo */}
-            <div
-                className="w-8.5 h-8.5 rounded-[10px] flex items-center justify-center mr-5 shrink-0"
-                style={{ background: "linear-gradient(135deg,#6C5CE7,#a78bfa)" }}
-            >
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                    <path d="M4 9Q9 4 14 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-                    <path d="M4 12Q9 7 14 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-                    <circle cx="14" cy="13" r="3" fill="white" />
-                    <path d="M12.8 13l.9.9 1.5-1.8" stroke="#6C5CE7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </div>
+            <Link href="/dashboard" className="flex items-center mr-6 shrink-0">
+                <span className="font-[Sora,sans-serif] font-extrabold text-[20px] tracking-tight" style={{ color: "#6C5CE7" }}>
+                    Post
+                </span>
+                <span className="text-white font-[Sora,sans-serif] font-extrabold text-[20px] tracking-tight">
+                    craft
+                </span>
+            </Link>
 
             {/* Nav items */}
             <div className="flex items-center gap-0.5 flex-1">
@@ -102,7 +99,7 @@ export default function Navbar() {
 
                 <div
                     className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[12px] font-bold text-white cursor-pointer shrink-0"
-                    style={{ background: "linear-gradient(135deg,#fd79a8,#6C5CE7)" }}
+                    style={{ background: "#fd79a8" }}
                 >
                     JD
                 </div>

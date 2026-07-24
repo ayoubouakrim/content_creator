@@ -10,6 +10,7 @@ import {
   Sparkles,
   Info,
 } from "lucide-react";
+import Footer from "@/components/Footer";
 
 /* ══ PLATFORMS — same set/colors used across the app ══ */
 const PLATFORMS = [
@@ -380,6 +381,7 @@ export default function HashtagsPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

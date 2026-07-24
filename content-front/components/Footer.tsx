@@ -4,12 +4,20 @@ export default function Footer() {
   return (
     <footer className="mt-16 bg-[#0f172a] text-white">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <div className="max-w-7xl mx-auto px-8 pt-10 pb-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
           
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-bold mb-4 text-white">YourBrand</h3>
+            {/* Logo */}
+            <div className="flex items-center mr-6 shrink-0">
+                <span className="font-[Sora,sans-serif] font-extrabold text-[20px] tracking-tight" style={{ color: "#6C5CE7" }}>
+                    Post
+                </span>
+                <span className="text-white font-[Sora,sans-serif] font-extrabold text-[20px] tracking-tight">
+                    craft
+                </span>
+            </div>
             <p className="text-sm text-[#cbd5e1] mb-4 leading-relaxed">
               AI-powered content creation and SEO optimization tools for modern businesses.
             </p>
@@ -72,7 +80,7 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-[#1e293b] my-8"></div>
+        <div className="border-t border-[#1e293b] my-4"></div>
 
         {/* Bottom Footer */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

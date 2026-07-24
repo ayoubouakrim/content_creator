@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import ContentDisplay from "@/components/content/ContentDisplay";
 import SEOReportCard from "@/components/content/SEOReport";
+import Footer from "@/components/Footer";
 
 export default function ResultsPage() {
   const params = useParams();
@@ -156,6 +157,7 @@ export default function ResultsPage() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

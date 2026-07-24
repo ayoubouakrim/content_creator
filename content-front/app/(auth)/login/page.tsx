@@ -258,16 +258,13 @@ export default function LoginPage() {
             />
 
             {/* Logo */}
-            <div className="flex items-center gap-2.5 z-10">
-              <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-[#6C5CE7] to-purple-500 flex items-center justify-center">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M4 9Q9 4 14 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-                  <path d="M4 12Q9 7 14 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-                  <circle cx="14" cy="13" r="3" fill="white"/>
-                  <path d="M12.8 13l.9.9 1.5-1.8" stroke="#6C5CE7" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <span className="text-white font-bold text-base tracking-[-0.02em]">CreatorAI</span>
+            <div className="flex items-center mr-6 shrink-0">
+                <span className="font-[Sora,sans-serif] font-extrabold text-[20px] tracking-tight" style={{ color: "#6C5CE7" }}>
+                    Post
+                </span>
+                <span className="text-white font-[Sora,sans-serif] font-extrabold text-[20px] tracking-tight">
+                    craft
+                </span>
             </div>
 
             {/* Slide content */}

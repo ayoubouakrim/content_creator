@@ -14,6 +14,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import Footer from "@/components/Footer";
 
 /* ══ helpers ══ */
 function ringColor(score: number) {
@@ -501,6 +502,7 @@ export default function ContentDetailPage() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

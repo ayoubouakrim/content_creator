@@ -15,6 +15,7 @@ import {
   Play,
   Music2,
 } from "lucide-react";
+import Footer from "@/components/Footer";
 
 /* ══ CONTENT TYPES — same set/colors used elsewhere ══ */
 const CONTENT_TYPES = [
@@ -379,6 +380,7 @@ export default function ImproveSEOPage() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

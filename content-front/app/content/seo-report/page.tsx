@@ -13,6 +13,7 @@ import {
   Music2,
   Sparkles,
 } from "lucide-react";
+import Footer from "@/components/Footer";
 
 /* ══ TYPE SELECTOR — reuses the color language from ContentStudio ══ */
 const CONTENT_TYPES = [
@@ -296,6 +297,7 @@ export default function SEOAnalyzerPage() {
           {!loading && report && <SEOReportCard report={report} onClose={() => setReport(null)} />}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

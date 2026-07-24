@@ -17,6 +17,7 @@ import {
   BookOpen,
   Target,
 } from "lucide-react";
+import Footer from "@/components/Footer";
 
 /* ══ DATA ══════════════════════════════════════════════════════ */
 const POST_TYPES = [
@@ -535,6 +536,7 @@ export default function ContentStudio() {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
